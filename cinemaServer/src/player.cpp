@@ -8,6 +8,14 @@
 
 #include "player.h"
 
+void Player::setupCustom(int id) {
+    setData(new CustomData());
+    CustomData * theData = (CustomData *)getData();
+    theData->type = PLAYER_TYPE;
+    theData->remove = false;
+    theData->id = id;
+    score = 0;
+}
 void Player::display() {
     float width = getWidth();
     float height = getHeight();

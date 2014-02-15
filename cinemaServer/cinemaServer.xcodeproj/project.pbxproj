@@ -75,6 +75,7 @@
 		6FFE12A118A6EB9C00E0DFC7 /* OscReceivedElements.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FFE129318A6EB9C00E0DFC7 /* OscReceivedElements.cpp */; };
 		6FFE12A218A6EB9C00E0DFC7 /* OscTypes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FFE129518A6EB9C00E0DFC7 /* OscTypes.cpp */; };
 		6FFE12AA18A701E100E0DFC7 /* ofxBonjourIp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FFE12A818A701E100E0DFC7 /* ofxBonjourIp.cpp */; };
+		6FFE12B918AD367A00E0DFC7 /* food.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FFE12B718AD367A00E0DFC7 /* food.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E45BE97B0E8CC7DD009D7055 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9710E8CC7DD009D7055 /* AGL.framework */; };
@@ -285,6 +286,9 @@
 		6FFE129618A6EB9C00E0DFC7 /* OscTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OscTypes.h; sourceTree = "<group>"; };
 		6FFE12A818A701E100E0DFC7 /* ofxBonjourIp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBonjourIp.cpp; sourceTree = "<group>"; };
 		6FFE12A918A701E100E0DFC7 /* ofxBonjourIp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxBonjourIp.h; sourceTree = "<group>"; };
+		6FFE12B718AD367A00E0DFC7 /* food.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = food.cpp; sourceTree = "<group>"; };
+		6FFE12B818AD367A00E0DFC7 /* food.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = food.h; sourceTree = "<group>"; };
+		6FFE12C518AEDE5B00E0DFC7 /* custom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = custom.h; sourceTree = "<group>"; };
 		BBAB23BE13894E4700AA2426 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = ../../../libs/glut/lib/osx/GLUT.framework; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E45BE9710E8CC7DD009D7055 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
@@ -749,6 +753,9 @@
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
 				6FFE123018A6EAA000E0DFC7 /* player.cpp */,
 				6FFE123118A6EAA000E0DFC7 /* player.h */,
+				6FFE12C518AEDE5B00E0DFC7 /* custom.h */,
+				6FFE12B718AD367A00E0DFC7 /* food.cpp */,
+				6FFE12B818AD367A00E0DFC7 /* food.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -881,6 +888,7 @@
 				6FFE11AD18A6EA3000E0DFC7 /* b2ContactManager.cpp in Sources */,
 				6FFE11B918A6EA3100E0DFC7 /* b2PolygonAndCircleContact.cpp in Sources */,
 				6FFE11B118A6EA3100E0DFC7 /* b2WorldCallbacks.cpp in Sources */,
+				6FFE12B918AD367A00E0DFC7 /* food.cpp in Sources */,
 				6FFE11CA18A6EA3100E0DFC7 /* ofxBox2dBaseShape.cpp in Sources */,
 				6FFE11BD18A6EA3100E0DFC7 /* b2GearJoint.cpp in Sources */,
 				6FFE11C918A6EA3100E0DFC7 /* ofxBox2d.cpp in Sources */,
