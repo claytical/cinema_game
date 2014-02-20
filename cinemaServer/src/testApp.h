@@ -3,6 +3,7 @@
 #include "ofxBox2d.h"
 #include "ofxOsc.h"
 #include "ofxBonjourIp.h"
+#include "ofxUI.h"
 #include "player.h"
 #include "food.h"
 
@@ -14,6 +15,17 @@
 
 
 // -------------------------------------------------
+
+#define NUMBER_OF_TEAMS     5
+#define PLAYERS_PER_TEAM    10
+
+#define GAME_STATE_WAITING  0
+#define GAME_STATE_PAUSED   1
+#define GAME_STATE_PLAYING  2
+#define GAME_CONTROL_MOVE   0
+#define GAME_CONTROL_AUDIO  1
+#define GAME_CONTROL_ACCEL  2
+#define GAME_CONTROL_TAP    3
 
 class testApp : public ofBaseApp {
 	
@@ -36,14 +48,26 @@ public:
 
     //Distribute a received message among the known hosts
     void broadcastReceivedMessage(string chatmessage);
+    void broadcastFeedback(string control, int param);
     
     // Parse an OscMessage into a string for easy logging
     string getOscMsgAsString(ofxOscMessage m);
     
+    void onPublishedService(const void* sender, string &serviceIp);
+    void onDiscoveredService(const void* sender, string &serviceIp);
+    void onRemovedService(const void* sender, string &serviceIp);
+    void gotMessage(ofMessage msg);
+    void guiEvent(ofxUIEventArgs &e);
+    void exit();
     
     void newPlayer(string pname);
     void newFood();
+    int whoWon();
     
+    ofxUICanvas *mainMenu;
+    ofxUICanvas *gameoverMenu;
+        
+    ofImage logo;
     
     //----------------------------------------
     // Client for sending messages to players
@@ -60,14 +84,20 @@ public:
     ofxOscReceiver serverReceiver; // OSC receiver
     int serverRecvPort; // port we're listening on: must match port from sender!
     
-    
+    ofxBonjourIp* bonjour;
     
     
 	ofxBox2d                            box2d;			  //	the box2d world
     vector <ofPtr<Player> > players;
     vector <ofPtr<Food> > food;
     ofTrueTypeFont largeGameText;
-    ofImage playerImages[5];
+    ofTrueTypeFont gameText;
+    float gameTimer;
+    ofImage playerImages[10];
+    int gameState;
+    bool gamePaused;
+    int winner;
+
     
 };
 
