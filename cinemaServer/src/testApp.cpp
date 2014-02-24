@@ -45,7 +45,7 @@ void testApp::setup() {
 	for (int i = 0; i < 10; i++) {
         playerImages[i].loadImage(ofToString(i) + ".png");
     }
-
+    plankton.loadImage("plankton.png");
     //CREATE food
     
     for (int i = 0; i < AMOUNT_OF_FOOD; i++) {
@@ -453,13 +453,13 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
             if (data1->type == FOOD_TYPE) {
                 //food is data1, player is data2
                 data1->remove = true;
-                players[data2->id].get()->score+= food[data1->id].get()->getRadius();
+                players[data2->id].get()->score+= food[data1->id].get()->getWidth();
                // newFood();
             }
             else {
                 //food is data2, player is data1
                 data2->remove = true;
-                players[data1->id].get()->score+= food[data2->id].get()->getRadius();
+                players[data1->id].get()->score+= food[data2->id].get()->getWidth();
                // newFood();
             }
 
@@ -471,8 +471,9 @@ void testApp::newFood() {
     ofPtr<Food> f = ofPtr<Food>(new Food);
     f.get()->setPhysics(.5, 1, 1);
 
-    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), ofRandom(10,20));
+    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton.width, plankton.height);
     f.get()->setVelocity(ofRandom(-2,2), ofRandom(-2,2));
+    f.get()->image = &plankton;
 
     f.get()->setData(new CustomData());
     f.get()->setupCustom(food.size());

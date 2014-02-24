@@ -7,13 +7,15 @@
 //
 
 #include "ofMain.h"
-#include "ofxBox2dCircle.h"
+#include "ofxBox2dRect.h"
 #include "custom.h"
 
-class Food : public ofxBox2dCircle {
+class Food : public ofxBox2dRect {
     
 public:
     void display();
     void setupCustom(int id);
     bool eaten;
+    ofImage *image;
+
 };

@@ -68,7 +68,7 @@ public:
     ofxUICanvas *gameoverMenu;
         
     ofImage logo;
-    
+    ofImage plankton;
     //----------------------------------------
     // Client for sending messages to players
     
