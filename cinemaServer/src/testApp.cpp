@@ -64,7 +64,7 @@ void testApp::setup() {
     mainMenu->setPosition(logo.width, logo.height + 50);
     gameoverMenu->setPosition(ofGetWidth() - gameoverMenu->getRect()->getWidth(), ofGetHeight() - gameoverMenu->getRect()->getHeight());
     gameoverMenu->setVisible(false);
-    newPlayer("tical");
+//    newPlayer("tical");
 }
 
 void testApp::guiEvent(ofxUIEventArgs &e)
@@ -90,8 +90,11 @@ void testApp::guiEvent(ofxUIEventArgs &e)
         
         if (name == "replay" && button->getValue()) {
             ofRemoveListener(gameoverMenu->newGUIEvent, this, &testApp::guiEvent);
+            ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
+            ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
             gameoverMenu->setVisible(false);
             gameTimer = ofGetElapsedTimef() + 30;
+            broadcastFeedback("state", GAME_STATE_PLAYING);
             gameState = PLAYING_GAME_1;
         }
         
@@ -124,6 +127,8 @@ void testApp::update() {
         serverReceiver.getNextMessage(&msg);
         ofLogVerbose("Server Received Message: " + getOscMsgAsString(msg) + " from " + msg.getRemoteIp());
         //JOIN GAME
+        cout << "someone is joining" << endl;
+
         if (msg.getAddress() == "/join") {
             //PLAYER JOINING
             string incomingPlayer = msg.getRemoteIp();
