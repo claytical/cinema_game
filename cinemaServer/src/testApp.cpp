@@ -8,7 +8,8 @@
 
 #define WAITING_FOR_PLAYERS 0
 #define PLAYING_GAME_1      1
-#define SHOWING_WINNER      2
+#define PLAYING_GAME_2      2
+#define SHOWING_WINNER      3
 
 static bool removeShape(ofPtr<ofxBox2dBaseShape> shape) {
     CustomData *custom = (CustomData *)shape->getData();
@@ -56,6 +57,8 @@ void testApp::setup() {
     
     mainMenu = new ofxUICanvas();
     mainMenu->addImageButton("Sea Nibbles", "sea-nibbles.png", false, 200, 16);
+    mainMenu->addImageButton("Screaming Death", "sea-nibbles.png", false, 200, 16);
+
     gameoverMenu = new ofxUICanvas();
     
     gameoverMenu->addButton("main menu", false);
@@ -79,6 +82,15 @@ void testApp::guiEvent(ofxUIEventArgs &e)
             ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
             ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
             gameTimer = ofGetElapsedTimef() + 30;
+            mainMenu->setVisible(false);
+            ofRemoveListener(mainMenu->newGUIEvent, this, &testApp::guiEvent);
+        }
+        if (name == "Screaming Death" && button->getValue()) {
+            broadcastFeedback("state", GAME_STATE_PLAYING);
+            gameState = PLAYING_GAME_2;
+            ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
+            ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
+//            gameTimer = ofGetElapsedTimef() + 30;
             mainMenu->setVisible(false);
             ofRemoveListener(mainMenu->newGUIEvent, this, &testApp::guiEvent);
         }
@@ -470,8 +482,8 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
 void testApp::newFood() {
     ofPtr<Food> f = ofPtr<Food>(new Food);
     f.get()->setPhysics(.5, 1, 1);
-
-    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton.width, plankton.height);
+    float fSize = ofRandom(.1, 1);
+    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton.width* fSize, plankton.height * fSize);
     f.get()->setVelocity(ofRandom(-2,2), ofRandom(-2,2));
     f.get()->image = &plankton;
 
