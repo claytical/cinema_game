@@ -13,6 +13,7 @@ class Player : public ofxBox2dRect {
     
 public:
     void display();
+    void resetScore();
     void setupCustom(int id);
     string name;
     int playerId;

@@ -1,0 +1,3 @@
+# view AndroidManifest.xml #generated:1
+-keep class processing.test.nerdlab_p5controller.nerdlab_P5controller { <init>(...); }
+

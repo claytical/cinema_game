@@ -115,6 +115,8 @@ void testApp::guiEvent(ofxUIEventArgs &e)
             ofAddListener(mainMenu->newGUIEvent, this, &testApp::guiEvent);
             gameoverMenu->setVisible(false);
             mainMenu->setVisible(true);
+            players.clear();
+            knownClients.clear();
             gameState = GAME_STATE_WAITING;
             
         }
@@ -139,9 +141,10 @@ void testApp::update() {
         serverReceiver.getNextMessage(&msg);
         ofLogVerbose("Server Received Message: " + getOscMsgAsString(msg) + " from " + msg.getRemoteIp());
         //JOIN GAME
-        cout << "someone is joining" << endl;
 
         if (msg.getAddress() == "/join") {
+            cout << "someone is joining" << endl;
+
             //PLAYER JOINING
             string incomingPlayer = msg.getRemoteIp();
             //take in their name
@@ -214,6 +217,14 @@ void testApp::update() {
                 
                 players.push_back(p);
                 
+                ofxOscMessage m;
+                m.setAddress("/feedback");
+                m.addStringArg("state");
+                m.addIntArg(GAME_STATE_PLAYING);
+                serverSender.sendMessage(m);
+
+                
+                
                 ofLogVerbose("Sent message " + msgToPlayer.getArgAsString(0) + " to " + msgToPlayer.getRemoteIp()
                              + ":" + ofToString(msgToPlayer.getRemotePort()));
                 
@@ -250,6 +261,14 @@ void testApp::update() {
 
             if (ofGetElapsedTimef() > gameTimer) {
                 winner = whoWon();
+                for (int i = 0; i < players.size(); i++) {
+                    cout << players[i].get()->name << " : " << players[i].get()->score << endl;
+
+                }
+                for (int i = 0; i < players.size(); i++) {
+                    players[i].get()->resetScore();
+                }
+
                 gameState = SHOWING_WINNER;
                 broadcastFeedback("state", GAME_STATE_WAITING);
                 ofAddListener(gameoverMenu->newGUIEvent,this,&testApp::guiEvent);
@@ -366,16 +385,7 @@ void testApp::keyPressed(int key) {
 	if(key == 't') ofToggleFullscreen();
 
     if(key == ' ') {
-/*
-        if (gameState == WAITING_FOR_PLAYERS) {
-            broadcastFeedback("state", GAME_STATE_PLAYING);
-            gameState = PLAYING_GAME_1;
-            ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
-            ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
-            gameTimer = ofGetElapsedTimef() + 30;
 
-        }
- */
         if (gameState == PLAYING_GAME_1) {
             gameState = SHOWING_WINNER;
             broadcastFeedback("state", GAME_STATE_WAITING);
@@ -384,8 +394,9 @@ void testApp::keyPressed(int key) {
         else if (gameState == SHOWING_WINNER) {
             broadcastFeedback("state", GAME_STATE_WAITING);
             gameState = WAITING_FOR_PLAYERS;
+            cout << "resetting scores" << endl;
             for (int i = 0; i < players.size(); i++) {
-                players[i].get()->score = 0;
+                players[i].get()->resetScore();
             }
         }
     }

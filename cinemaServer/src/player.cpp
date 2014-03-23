@@ -30,3 +30,7 @@ void Player::display() {
     ofPopMatrix();
     
 }
+
+void Player::resetScore() {
+    score = 0;
+}
