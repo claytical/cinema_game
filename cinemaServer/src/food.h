@@ -16,6 +16,7 @@ public:
     void display();
     void setupCustom(int id);
     bool eaten;
+    ofColor color;
     ofImage *image;
 
 };

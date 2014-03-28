@@ -14,6 +14,7 @@ void Food::setupCustom(int id) {
     theData->type = FOOD_TYPE;
     theData->remove = false;
     theData->id = id;
+    color = ofColor(ofRandom(100, 200), 200);
 }
 void Food::display() {
 //    float radius = getRadius();
@@ -23,11 +24,11 @@ void Food::display() {
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofTranslate(getPosition());
     ofRotateZ(getRotation());
-    ofSetColor(0,255,0);
+    ofSetColor(color);
     ofFill();
     image->draw(0,0, width, height);
 //    ofRect(0, 0, width, height);
-    ofSetRectMode(OF_RECTMODE_CENTER);
+    ofSetRectMode(OF_RECTMODE_CORNER);
     //    ofCircle(0,0,radius);
     ofPopMatrix();
 }

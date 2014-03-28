@@ -68,7 +68,8 @@ public:
     ofxUICanvas *gameoverMenu;
         
     ofImage logo;
-    ofImage plankton;
+    ofImage plankton[5];
+    ofImage sea[3];
     //----------------------------------------
     // Client for sending messages to players
     
@@ -97,6 +98,7 @@ public:
     int gameState;
     bool gamePaused;
     int winner;
+    bool debugging;
 
     
 };

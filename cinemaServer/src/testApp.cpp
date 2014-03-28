@@ -4,7 +4,7 @@
 #define NUMBER_OF_ROWS    10
 #define PLAYER_SIZE       35
 #define STARTING_PORT     9000
-#define AMOUNT_OF_FOOD    50
+#define AMOUNT_OF_FOOD    100
 
 #define WAITING_FOR_PLAYERS 0
 #define PLAYING_GAME_1      1
@@ -24,7 +24,10 @@ void testApp::setup() {
     ofEnableAlphaBlending();
     ofEnableSmoothing();
     ofBackground(13, 45, 152);
-    
+    for (int i = 0; i < 3; i++) {
+        sea[i].loadImage("wave" + ofToString(i) + ".png");
+    }
+ 
     bonjour = new ofxBonjourIp();
     bonjour->addEventListeners(this); // optional
     
@@ -46,7 +49,9 @@ void testApp::setup() {
 	for (int i = 0; i < 10; i++) {
         playerImages[i].loadImage(ofToString(i) + ".png");
     }
-    plankton.loadImage("plankton.png");
+    for (int i = 0; i < 5; i++) {
+        plankton[i].loadImage("plankton"+ofToString(i)+".png");
+    }
     //CREATE food
     
     for (int i = 0; i < AMOUNT_OF_FOOD; i++) {
@@ -67,6 +72,7 @@ void testApp::setup() {
     mainMenu->setPosition(logo.width, logo.height + 50);
     gameoverMenu->setPosition(ofGetWidth() - gameoverMenu->getRect()->getWidth(), ofGetHeight() - gameoverMenu->getRect()->getHeight());
     gameoverMenu->setVisible(false);
+    debugging = true;
 //    newPlayer("tical");
 }
 
@@ -221,6 +227,7 @@ void testApp::update() {
                 m.setAddress("/feedback");
                 m.addStringArg("state");
                 m.addIntArg(GAME_STATE_PLAYING);
+                m.setRemoteEndpoint(incomingPlayer, serverRecvPort +1);
                 serverSender.sendMessage(m);
 
                 
@@ -292,8 +299,28 @@ void testApp::update() {
 
 //--------------------------------------------------------------
 void testApp::draw() {
+    for (int x = 0; x < ofGetWidth(); x += sea[0].width){
+        
+        sea[2].draw(x, ofGetHeight() - (sea[0].height * 1.9));
+        sea[1].draw(x, ofGetHeight() - (sea[0].height * 1.5));
+        sea[0].draw(x, ofGetHeight() -  sea[0].height);
+        
+    }
+    string info = "";
+
+    info += "Players: " + ofToString(knownClients.size()) + "\n";
+    //            info += "FPS: "+ofToString(ofGetFrameRate(), 1)+"\n";
+    info += "Host: " + bonjour->getDeviceHostName() + "\n";
+    info += "IP: " + bonjour->getDeviceIp()+ "\n";
+    info += "SSID: nerdlab\n";
+    info += "Controller for iOS: http://bit.ly/1iu6WhF\n";
+    info += "Controller for Android: http://bit.ly/1gi8zj0\n";
+    
+    for (int i = 0; i < players.size(); i++) {
+        info+= players[i].get()->name + " has joined the game\n";
+    }
+
     //DEBUG INFO
-	string info = "";
     for (int i = 0; i < players.size(); i++) {
         players[i].get()->display();
     }
@@ -302,19 +329,13 @@ void testApp::draw() {
 
     switch (gameState) {
         case WAITING_FOR_PLAYERS:
-            info += "Players: " + ofToString(knownClients.size()) + "\n";
-//            info += "FPS: "+ofToString(ofGetFrameRate(), 1)+"\n";
-            info += "Host: " + bonjour->getDeviceHostName() + "\n";
-            info += "IP: " + bonjour->getDeviceIp()+ "\n";
-
-            for (int i = 0; i < players.size(); i++) {
-                info+= players[i].get()->name + " has joined the game\n";
-            }
             ofSetColor(255,255,255,200);
             logo.draw(ofGetWidth()/2-logo.width/2, 20);
             
             break;
         case PLAYING_GAME_1:
+            ofSetColor(255,255,255);
+
 
             for (int i = 0; i < food.size(); i++) {
                 food[i].get()->display();
@@ -335,7 +356,7 @@ void testApp::draw() {
             ofSetColor(255,255,255);
             largeGameText.drawString("Game Over", 25, ofGetHeight()/3 + 5);
             
-            if (players.size() > 0) {
+            if (players.size() > 0 && winner != -1) {
                 ofSetColor(0);
                 gameText.drawString(players[winner].get()->name + " wins!", 20, ofGetHeight()/3 + 100);
                 ofSetColor(255, 255, 255);
@@ -345,9 +366,10 @@ void testApp::draw() {
         default:
             break;
     }
-	ofSetHexColor(0xffffff);
-	ofDrawBitmapString(info, 20, ofGetHeight()-100);
-    
+    if (debugging ) {
+        ofSetHexColor(0xffffff);
+        ofDrawBitmapString(info, 20, ofGetHeight()-100);
+    }
 }
 
 void testApp::newPlayer(string pname) {
@@ -383,7 +405,9 @@ void testApp::keyPressed(int key) {
     }
     
 	if(key == 't') ofToggleFullscreen();
-
+    if(key == 'd') {
+        debugging = !debugging;
+    }
     if(key == ' ') {
 
         if (gameState == PLAYING_GAME_1) {
@@ -404,14 +428,14 @@ void testApp::keyPressed(int key) {
 
 int testApp::whoWon() {
     int highScore = -999;
-    int winner = -1;
+    int theWinner = -1;
     for (int i = 0; i < players.size(); i++) {
         if (players[i].get()->score>highScore) {
             winner = i;
             highScore = players[i].get()->score;
         }
     }
-    return winner;
+    return theWinner;
 }
 
 //--------------------------------------------------------------
@@ -493,10 +517,11 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
 void testApp::newFood() {
     ofPtr<Food> f = ofPtr<Food>(new Food);
     f.get()->setPhysics(.5, 1, 1);
-    float fSize = ofRandom(.1, 1);
-    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton.width* fSize, plankton.height * fSize);
+    float fSize = ofRandom(.1, .5);
+    int planktonNumber = int(ofRandom(5));
+    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
     f.get()->setVelocity(ofRandom(-2,2), ofRandom(-2,2));
-    f.get()->image = &plankton;
+    f.get()->image = &plankton[planktonNumber];
 
     f.get()->setData(new CustomData());
     f.get()->setupCustom(food.size());
