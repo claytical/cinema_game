@@ -58,6 +58,13 @@
 		684CFB2E4AC045640B3A61F8 /* b2WheelJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D18AF2C4EAE1F91A3CC44475 /* b2WheelJoint.cpp */; };
 		6DEA36329DE746459C62983F /* b2EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2740F234BABAAF7475AC01AA /* b2EdgeShape.cpp */; };
 		6FCE95D2EF10ACCEC2724688 /* b2Island.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C703FD5B2D1D10BAEE01BEA /* b2Island.cpp */; };
+		6FECC51818E899F3000A91E4 /* ofxVoiceSynthesizer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC51318E899F3000A91E4 /* ofxVoiceSynthesizer.mm */; };
+		6FECC51918E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC51518E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm */; };
+		6FECC51E18E8BE89000A91E4 /* food.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC51C18E8BE89000A91E4 /* food.cpp */; };
+		6FECC52118E8D366000A91E4 /* attacker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC51F18E8D366000A91E4 /* attacker.cpp */; };
+		6FECC52418E8DBFE000A91E4 /* zombie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC52218E8DBFE000A91E4 /* zombie.cpp */; };
+		6FECC52718E8E706000A91E4 /* humanoid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC52518E8E706000A91E4 /* humanoid.cpp */; };
+		6FECC52A18E91401000A91E4 /* chain.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC52818E91401000A91E4 /* chain.cpp */; };
 		6FF0D6CD18E5FB0800D41037 /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FF0D6CB18E5FB0800D41037 /* player.cpp */; settings = {COMPILER_FLAGS = "-x objective-c++"; }; };
 		70ACBBD5DBE2725EC1E99CCF /* b2CircleContact.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4C1A083AC6F4F462EBC57565 /* b2CircleContact.cpp */; };
 		71C677669B75120425DE19D4 /* b2DynamicTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5738A60D76F5B706CB90C164 /* b2DynamicTree.cpp */; };
@@ -286,6 +293,23 @@
 		6B65E6930994CC4B2D2B8B33 /* OscPacketListener.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = OscPacketListener.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h; sourceTree = SOURCE_ROOT; };
 		6B991C1BAE4D8067BF37E903 /* ofxBox2dRender.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxBox2dRender.h; path = ../../../addons/ofxBox2d/src/ofxBox2dRender.h; sourceTree = SOURCE_ROOT; };
 		6C380B1DFE0E88A4F86B7A0C /* b2Collision.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = b2Collision.h; path = ../../../addons/ofxBox2d/libs/Box2D/Collision/b2Collision.h; sourceTree = SOURCE_ROOT; };
+		6FECC50B18E899F3000A91E4 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		6FECC51018E899F3000A91E4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		6FECC51218E899F3000A91E4 /* ofxVoiceSynthesizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxVoiceSynthesizer.h; sourceTree = "<group>"; };
+		6FECC51318E899F3000A91E4 /* ofxVoiceSynthesizer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ofxVoiceSynthesizer.mm; sourceTree = "<group>"; };
+		6FECC51418E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxVoiceSynthesizerDelegate.h; sourceTree = "<group>"; };
+		6FECC51518E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ofxVoiceSynthesizerDelegate.mm; sourceTree = "<group>"; };
+		6FECC51B18E8BDF8000A91E4 /* custom.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = custom.h; sourceTree = "<group>"; };
+		6FECC51C18E8BE89000A91E4 /* food.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = food.cpp; sourceTree = "<group>"; };
+		6FECC51D18E8BE89000A91E4 /* food.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = food.h; sourceTree = "<group>"; };
+		6FECC51F18E8D366000A91E4 /* attacker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = attacker.cpp; sourceTree = "<group>"; };
+		6FECC52018E8D366000A91E4 /* attacker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = attacker.h; sourceTree = "<group>"; };
+		6FECC52218E8DBFE000A91E4 /* zombie.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = zombie.cpp; sourceTree = "<group>"; };
+		6FECC52318E8DBFE000A91E4 /* zombie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zombie.h; sourceTree = "<group>"; };
+		6FECC52518E8E706000A91E4 /* humanoid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = humanoid.cpp; sourceTree = "<group>"; };
+		6FECC52618E8E706000A91E4 /* humanoid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = humanoid.h; sourceTree = "<group>"; };
+		6FECC52818E91401000A91E4 /* chain.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chain.cpp; sourceTree = "<group>"; };
+		6FECC52918E91401000A91E4 /* chain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = chain.h; sourceTree = "<group>"; };
 		6FF0D6CB18E5FB0800D41037 /* player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = player.cpp; sourceTree = "<group>"; };
 		6FF0D6CC18E5FB0800D41037 /* player.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = player.h; sourceTree = "<group>"; };
 		6FF0D86C18E6335300D41037 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -628,6 +652,28 @@
 			name = src;
 			sourceTree = "<group>";
 		};
+		6FECC50A18E899F3000A91E4 /* ofxVoiceSynthesizer */ = {
+			isa = PBXGroup;
+			children = (
+				6FECC50B18E899F3000A91E4 /* .gitignore */,
+				6FECC51018E899F3000A91E4 /* README.md */,
+				6FECC51118E899F3000A91E4 /* src */,
+			);
+			name = ofxVoiceSynthesizer;
+			path = ../../../addons/ofxVoiceSynthesizer;
+			sourceTree = "<group>";
+		};
+		6FECC51118E899F3000A91E4 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				6FECC51218E899F3000A91E4 /* ofxVoiceSynthesizer.h */,
+				6FECC51318E899F3000A91E4 /* ofxVoiceSynthesizer.mm */,
+				6FECC51418E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.h */,
+				6FECC51518E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
 		6FF0D86B18E6335300D41037 /* ofxObjective-C--Utility */ = {
 			isa = PBXGroup;
 			children = (
@@ -806,6 +852,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
+				6FECC50A18E899F3000A91E4 /* ofxVoiceSynthesizer */,
 				6FF0D86B18E6335300D41037 /* ofxObjective-C--Utility */,
 				E6053AB7FEC63D5F83825B88 /* ofxOsc */,
 				1F4FB5C423662B96ADFDCC0B /* ofxXmlSettings */,
@@ -1044,6 +1091,17 @@
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
 				6FF0D6CB18E5FB0800D41037 /* player.cpp */,
 				6FF0D6CC18E5FB0800D41037 /* player.h */,
+				6FECC51B18E8BDF8000A91E4 /* custom.h */,
+				6FECC51C18E8BE89000A91E4 /* food.cpp */,
+				6FECC51D18E8BE89000A91E4 /* food.h */,
+				6FECC51F18E8D366000A91E4 /* attacker.cpp */,
+				6FECC52018E8D366000A91E4 /* attacker.h */,
+				6FECC52218E8DBFE000A91E4 /* zombie.cpp */,
+				6FECC52318E8DBFE000A91E4 /* zombie.h */,
+				6FECC52518E8E706000A91E4 /* humanoid.cpp */,
+				6FECC52618E8E706000A91E4 /* humanoid.h */,
+				6FECC52818E91401000A91E4 /* chain.cpp */,
+				6FECC52918E91401000A91E4 /* chain.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -1194,6 +1252,7 @@
 				5864AD82E20F15536D054EA3 /* ofxOscMessage.cpp in Sources */,
 				4ADB88E2FB52E76A471065DE /* ofxOscParameterSync.cpp in Sources */,
 				640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */,
+				6FECC52118E8D366000A91E4 /* attacker.cpp in Sources */,
 				8F5205AEF8861EF234F0651A /* ofxOscSender.cpp in Sources */,
 				ADE367465D2A8EBAD4C7A8D9 /* IpEndpointName.cpp in Sources */,
 				67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */,
@@ -1236,6 +1295,7 @@
 				1BE4156E2DF3B30461C48C70 /* b2Timer.cpp in Sources */,
 				3E76A164B41BCEB11B15C175 /* b2Body.cpp in Sources */,
 				C3D8EF14A387EA959014AD91 /* b2ContactManager.cpp in Sources */,
+				6FECC51818E899F3000A91E4 /* ofxVoiceSynthesizer.mm in Sources */,
 				FA7300BAC71DAC1ABAF6EE15 /* b2Fixture.cpp in Sources */,
 				6FCE95D2EF10ACCEC2724688 /* b2Island.cpp in Sources */,
 				AC527216645D66921FB3E36F /* b2World.cpp in Sources */,
@@ -1250,6 +1310,7 @@
 				7E1AAAB7A2F92465251AE49E /* b2PolygonAndCircleContact.cpp in Sources */,
 				41DDB078572B368F685E19F8 /* b2PolygonContact.cpp in Sources */,
 				14F3FB468FED85DD86CC9BCF /* b2DistanceJoint.cpp in Sources */,
+				6FECC51E18E8BE89000A91E4 /* food.cpp in Sources */,
 				03AC305C546FEDB7C2A7E1A8 /* b2FrictionJoint.cpp in Sources */,
 				2A5D09413FD64EB3AF88EF02 /* b2GearJoint.cpp in Sources */,
 				14D76FD1B7F190398D120FA4 /* b2Joint.cpp in Sources */,
@@ -1260,13 +1321,16 @@
 				9F9D49CFC30BA1589822E7AB /* b2PulleyJoint.cpp in Sources */,
 				A2E6B252D682A7FB048A1644 /* b2RevoluteJoint.cpp in Sources */,
 				9D0AA091FE805EB564CD05D0 /* b2RopeJoint.cpp in Sources */,
+				6FECC51918E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm in Sources */,
 				87C5C3DED336B7BB4A5D06D6 /* b2WeldJoint.cpp in Sources */,
 				684CFB2E4AC045640B3A61F8 /* b2WheelJoint.cpp in Sources */,
 				370CDDF0DD53C5453DBD3F22 /* b2Rope.cpp in Sources */,
 				4CC0FD96DE77FF40BBCF8DD8 /* del_impl.cpp in Sources */,
 				9F5C6DD965B4F3A6DB5B88F8 /* ofxUI2DGraph.cpp in Sources */,
 				4B3ED367CA852D522E2EE996 /* ofxUI2DPad.cpp in Sources */,
+				6FECC52718E8E706000A91E4 /* humanoid.cpp in Sources */,
 				F1E8DE8734BA6F69A5112FA8 /* ofxUIBaseDraws.cpp in Sources */,
+				6FECC52418E8DBFE000A91E4 /* zombie.cpp in Sources */,
 				C381F2B7CFD84C0E540EB4BC /* ofxUIBiLabelSlider.cpp in Sources */,
 				7D393646FB859A930EF58917 /* ofxUIButton.cpp in Sources */,
 				7BE46522B64E24FAEDE1A25D /* ofxUICanvas.cpp in Sources */,
@@ -1302,6 +1366,7 @@
 				52AFF80A869790144ACCC9BA /* ofxUISpectrum.cpp in Sources */,
 				1DAAC3FB4B98B08AE63F4687 /* ofxUISuperCanvas.cpp in Sources */,
 				5AE95ADB5549701423B6DA48 /* ofxUITabBar.cpp in Sources */,
+				6FECC52A18E91401000A91E4 /* chain.cpp in Sources */,
 				C961BE22AB9A8CCF037FC18F /* ofxUITextArea.cpp in Sources */,
 				F8D05F7C7F785CE323983B47 /* ofxUITextInput.cpp in Sources */,
 				04C82720B149CE576B8CBB06 /* ofxUIToggle.cpp in Sources */,

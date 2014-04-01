@@ -18,6 +18,13 @@ void testApp::setup(){
     
     //narrator setup
     narrator.setup("com.apple.speech.synthesis.voice.Fred");
+
+    //box2d setup
+    box2d.init();
+	box2d.setGravity(0, 0);
+    box2d.enableEvents();
+	box2d.setFPS(30.0);
+    
     
     debugging = true;
     gameStarted = false;
@@ -50,11 +57,78 @@ void testApp::update(){
         }
         
     }
+    
+    
+    switch(gameState) {
+        case GAME_STATE_GAME_1:
+            box2d.update();
+            if (food.size() < AMOUNT_OF_FOOD) {
+                for (int i = food.size(); i < AMOUNT_OF_FOOD; i++) {
+                    newFood();
+                }
+            }
+            
+            
+            break;
+        case GAME_STATE_GAME_2:
+            box2d.update();
+            if (attackers.size() < AMOUNT_OF_ATTACKERS) {
+                for (int i = attackers.size(); i < AMOUNT_OF_ATTACKERS; i++) {
+                    newAttacker();
+                }
+            }
+            break;
+        case GAME_STATE_GAME_4:
+            box2d.update();
+            if (zombies.size() < AMOUNT_OF_ZOMBIES) {
+                for (int i = zombies.size(); i < AMOUNT_OF_ZOMBIES; i++) {
+                    newZombie();
+                }
+            }
+            break;
+    }
 }
 
 //--------------------------------------------------------------
 void testApp::draw(){
-    
+    switch(gameState) {
+        case GAME_STATE_GAME_1:
+            ofSetColor(255,255,255);
+            
+            for (int i = 0; i < humanoids.size(); i++) {
+                humanoids[i].get()->display();
+            }
+            
+            for (int i = 0; i < food.size(); i++) {
+                food[i].get()->display();
+            }
+
+            // draw the ground
+            box2d.drawGround();
+            break;
+        case GAME_STATE_GAME_2:
+            ofSetColor(255,255,255);
+            
+            
+            for (int i = 0; i < attackers.size(); i++) {
+                attackers[i].get()->display();
+            }
+            // draw the ground
+            box2d.drawGround();
+            break;
+            
+        case GAME_STATE_GAME_4:
+            ofSetColor(255,255,255);
+            
+            
+            for (int i = 0; i < zombies.size(); i++) {
+                zombies[i].get()->display();
+            }
+            // draw the ground
+            box2d.drawGround();
+            break;
+
+    }
 }
 
 //--------------------------------------------------------------
@@ -75,8 +149,8 @@ void testApp::sendControl(string ip, int control, int playerId) {
     m.setAddress("/joined");
     m.addIntArg(playerId);
 //we're making everyone on the same team and subteam for now
-    m.addIntArg(1);
-    m.addIntArg(1);
+    m.addIntArg(1); //TEAM
+    m.addIntArg(1); //SUBTEAM
     
     //this sets the control scheme
     m.addIntArg(control);
@@ -138,24 +212,38 @@ void testApp::changeGameScene() {
     cout << "Changing Game Scene" << endl;
     switch (gameState) {
         case GAME_STATE_GAME_1_INTRO:
+            //
+            
             cout << "I'm playing the intro" << endl;
         
-            narrator.speak("36,000 feet below the Earth's surface lay a civilization, removed from the barbaric life of the Ocean [[slnc 1000]] and the even more barbaric life of the human world. [[slnc 2000]] For more than 5 millennia, the people of Atlantis have existed in relative peace and prosperity. [[slnc 3000]] Until today. [[slnc 10000]]");
+            narrator.speak("36,000 feet below the Earth's surface lay a civilization, removed from the barbaric life of the Ocean [[slnc 1000]] and the even more barbaric life of the human world. [[slnc 2000]] For more than 5 millennia, the people of Atlantis have existed in relative peace and prosperity. [[slnc 1000]] Until today. [[slnc 10000]]");
             broadcastState(GAME_STATE_WAITING);
             break;
         case GAME_STATE_GAME_1:
             cout << "Starting game #1, everyone should have drag controls" << endl;
+            //create humanoids for each player
+            for (int i = 0; i < players.size(); i++) {
+                newHumanoid();
+            }
+            
             broadcastControl(GAME_CONTROL_MOVE);
             break;
         case GAME_STATE_GAME_2_INTRO:
+            //clean up game #1
+            food.clear();
+
+            narrator.speak("Most of you have made it to your surface vehicles. But a few souls are lost, now as crazed as the attacking sea life. They are bent on destroying their former neighbors and friends. Your vehicle team must work together to navigate through the depths, avoiding contact with these deadly creatures that threaten to destroy your only mode of transportation.");
             cout << "Intro to game #2" << endl;
             broadcastState(GAME_STATE_WAITING);
             break;
         case GAME_STATE_GAME_2:
+            
             cout << "Starting game #2, everyone should have tilt controls" << endl;
             broadcastControl(GAME_CONTROL_ACCEL);
             break;
         case GAME_STATE_GAME_3_INTRO:
+            attackers.clear();
+            narrator.speak("In the distance is a building still standing. Fortified enough to shield your from attack, large enough for everyone to seek shelter. You must propel yourselves to safety. Take turns blowing into your phone, one-at-a-time, in the order you are lined up. ");
             cout << "Intro to game #3" << endl;
             broadcastState(GAME_STATE_WAITING);
             break;
@@ -164,6 +252,7 @@ void testApp::changeGameScene() {
             broadcastControl(GAME_CONTROL_AUDIO);
             break;
         case GAME_STATE_GAME_4_INTRO:
+            narrator.speak("Inside the warehouse, you find a stockpile of human firearms. Large, powerful guns that need three people to operate them. One to move. One to aim. One to fire.");
             cout << "Intro to game #4" << endl;
             broadcastState(GAME_STATE_WAITING);
             break;
@@ -172,7 +261,9 @@ void testApp::changeGameScene() {
             broadcastControl(GAME_CONTROL_TAP);
             break;
         case GAME_STATE_GAME_5_INTRO:
+            zombies.clear();
             cout << "Intro to game #5" <<endl;
+            narrator.speak("Avoid anyone who is red, they are infected. Stay alive, [[slnc 1000]] if you can.");
             broadcastState(GAME_STATE_WAITING);
             break;
         case GAME_STATE_GAME_5:
@@ -188,6 +279,7 @@ void testApp::changeGameScene() {
             broadcastControl(GAME_CONTROL_AUDIO);
             break;
         case GAME_STATE_GAME_OVER:
+            narrator.speak("Congratulations, you've saved the Atlantian race. Everyone is cured.");
             cout << "Game is now over" << endl;
             broadcastState(GAME_STATE_WAITING);
             break;
@@ -263,4 +355,80 @@ void testApp::onDiscoveredService(const void* sender, string &serviceIp) {
 
 void testApp::onRemovedService(const void* sender, string &serviceIp) {
     ofLog() << "Received removed service event: " << serviceIp;
+}
+
+//-----------GAME #1 FUNCTIONS
+
+void testApp::newFood() {
+    ofPtr<Food> f = ofPtr<Food>(new Food);
+    f.get()->setPhysics(.5, 1, 1);
+    
+    float fSize = ofRandom(.1, .5);
+    int planktonNumber = int(ofRandom(5));
+    // f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
+    f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 50 * fSize, 50 * fSize);
+    
+    f.get()->setVelocity(ofRandom(-2,2), ofRandom(-2,2));
+    //f.get()->image = &plankton[planktonNumber];
+    
+    f.get()->setData(new CustomData());
+    f.get()->setupCustom(food.size());
+    food.push_back(f);
+    
+}
+
+void testApp::newHumanoid() {
+    ofPtr<Humanoid> h = ofPtr<Humanoid>(new Humanoid);
+    h.get()->setPhysics(.5, 1, 1);
+    
+    // f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
+    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 50, 50);
+    
+    h.get()->setVelocity(0,0);
+    //f.get()->image = &plankton[planktonNumber];
+    
+    h.get()->setData(new CustomData());
+    h.get()->setupCustom(humanoids.size());
+    humanoids.push_back(h);
+    
+}
+
+
+//-----------GAME #2 FUNCTIONS
+
+void testApp::newAttacker() {
+    ofPtr<Attacker> a = ofPtr<Attacker>(new Attacker);
+    a.get()->setPhysics(.5, 1, 1);
+    
+    float aSize = ofRandom(.2, .3);
+    int planktonNumber = int(ofRandom(5));
+    a.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(0, -ofGetHeight()), 50 * aSize, 50 * aSize);
+    
+    a.get()->setVelocity(0, ofRandom(1,4));
+    //f.get()->image = &plankton[planktonNumber];
+    
+    a.get()->setData(new CustomData());
+    a.get()->setupCustom(attackers.size());
+    attackers.push_back(a);
+    
+}
+
+
+//-----------GAME #4 FUNCTIONS
+
+void testApp::newZombie() {
+    ofPtr<Zombie> z = ofPtr<Zombie>(new Zombie);
+    z.get()->setPhysics(.5, 1, 1);
+    
+    float zSize = ofRandom(.2, .3);
+    int planktonNumber = int(ofRandom(5));
+    z.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(0, -ofGetHeight()), 50 * zSize, 50 * zSize);
+    
+    z.get()->setVelocity(ofRandom(.1,-.1), ofRandom(0,1));
+    //f.get()->image = &plankton[planktonNumber];
+    
+    z.get()->setData(new CustomData());
+    z.get()->setupCustom(attackers.size());
+    zombies.push_back(z);
+    
 }

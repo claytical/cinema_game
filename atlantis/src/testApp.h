@@ -5,14 +5,18 @@
 #include "ofxOsc.h"
 #include "ofxBonjourIp.h"
 #include "player.h"
-#include "ofxSpeech.h"
+#include "ofxVoiceSynthesizer.h"
+#include "food.h"
+#include "attacker.h"
+#include "zombie.h"
+#include "humanoid.h"
 
 #define SERVER_PORT 9000
 #define CLIENT_PORT 9001
 
-#define GAME_STATE_WAITING  0
-#define GAME_STATE_PAUSED   1
-#define GAME_STATE_PLAYING  2
+#define GAME_STATE_WAITING          0
+#define GAME_STATE_PAUSED           1
+#define GAME_STATE_PLAYING          2
 
 #define GAME_STATE_GAME_1_INTRO     3
 #define GAME_STATE_GAME_1           4
@@ -28,13 +32,14 @@
 #define GAME_STATE_GAME_6           14
 #define GAME_STATE_GAME_OVER        15
 
+#define GAME_CONTROL_MOVE           0
+#define GAME_CONTROL_AUDIO          1
+#define GAME_CONTROL_ACCEL          2
+#define GAME_CONTROL_TAP            3
 
-
-#define GAME_CONTROL_MOVE   0
-#define GAME_CONTROL_AUDIO  1
-#define GAME_CONTROL_ACCEL  2
-#define GAME_CONTROL_TAP    3
-
+#define AMOUNT_OF_FOOD              50
+#define AMOUNT_OF_ATTACKERS         10
+#define AMOUNT_OF_ZOMBIES           200
 
 
 class testApp : public ofBaseApp{
@@ -84,6 +89,23 @@ class testApp : public ofBaseApp{
         bool gameStarted;
         int gameState;
         ofxVoiceSynthesizer narrator;
+        ofxBox2d    box2d;			  //	the box2d world
+
+    
+    //game #1
+        vector <ofPtr<Food> > food;
+        vector <ofPtr<Humanoid> > humanoids;
+        void newFood();
+        void newHumanoid();
+
+    //game #2
+        vector <ofPtr<Attacker> > attackers;
+        void newAttacker();
+
+    //game #4
+    vector <ofPtr<Zombie> > zombies;
+    void newZombie();
+
     
     //game functions
         int newPlayer(string player, string ip);
