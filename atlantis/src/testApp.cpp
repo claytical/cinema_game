@@ -25,7 +25,11 @@ void testApp::setup(){
     box2d.enableEvents();
 	box2d.setFPS(30.0);
     
-    
+    //image setup
+    for (int i = 0; i < 10; i++) {
+        playerImages[i].loadImage(ofToString(i) + ".png");
+    }
+
     debugging = true;
     gameStarted = false;
     gameState = GAME_STATE_WAITING;

@@ -70,7 +70,7 @@ class testApp : public ofBaseApp{
         void sendControl(string ip, int control, int playerId);
         void broadcastState(int state);
         void broadcastControl(int control);
-        void removeExistingPlayer(string ip);
+        int removeExistingPlayer(string ip);
     
     //game specific
         vector<Player> players;
@@ -81,6 +81,7 @@ class testApp : public ofBaseApp{
         ofxVoiceSynthesizer narrator;
         ofxBox2d    box2d;			  //	the box2d world
         ofxCenteredTrueTypeFont timerText;
+        ofImage playerImages[10];
 
     
     //game #1

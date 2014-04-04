@@ -1,5 +1,5 @@
 #include "testApp.h"
-void testApp::removeExistingPlayer(string ip) {
+int testApp::removeExistingPlayer(string ip) {
     for (int i = 0; i < players.size(); i++) {
         if(players[i].playerIp == ip) {
             cout << "Found Existing Player";
@@ -41,7 +41,12 @@ void testApp::setup(){
     ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
     ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
 
+    //game setup
     
+    for (int i = 0; i < 10; i++) {
+        playerImages[i].loadImage(ofToString(i) + ".png");
+    }
+
     debugging = true;
     gameStarted = false;
     gameState = GAME_STATE_WAITING;
@@ -75,7 +80,7 @@ void testApp::update(){
             }
             else {
                 //wants to rejoin
-                removeExistingPlayer(incomingPlayerIP);
+                int removedPlayerID = removeExistingPlayer(incomingPlayerIP);
                 //create a new player
                 int playerID = newPlayer(playerName, incomingPlayerIP);
                 
@@ -160,8 +165,10 @@ void testApp::draw(){
         else {
             ofSetColor(0);
             timerText.drawStringCentered("Press Space to Start", ofGetWidth()/2 - 2, ofGetHeight()/2 - 2);
+            timerText.drawStringCentered(bonjour->getDeviceIp(), ofGetWidth()/2 -2, ofGetHeight()/1.5 -2);
             ofSetColor(255);
             timerText.drawStringCentered("Press Space to Start", ofGetWidth()/2, ofGetHeight()/2);
+            timerText.drawStringCentered(bonjour->getDeviceIp(), ofGetWidth()/2, ofGetHeight()/1.5);
             
         }
     }
@@ -233,11 +240,51 @@ void testApp::joinGame(int playerId) {
     ofxOscMessage msg;
     msg.setAddress("/joined");
     msg.addIntArg(playerId);
-    //keep team, subteam and control at ... +1 because it hasn't been pushed back yet
-//    msg.addIntArg(playerId%10);
-//    msg.addIntArg(playerId%players.size());
-    msg.addIntArg(1); //TEAM
-    msg.addIntArg(1); // SUBTEAM
+//for larger game, update needs to be made to controller to assign color, not by int to allow for scalability and flexibility
+    msg.addIntArg(playerId%10); //TEAM - color
+    //shape #1
+    if (playerId < 10) {
+        msg.addIntArg(0); //SUBTEAM - shape
+    }
+    else if (playerId < 20) {
+        msg.addIntArg(1); //SUBTEAM - shape
+        
+    }
+    else if (playerId < 30) {
+        msg.addIntArg(2); //SUBTEAM - shape
+        
+    }
+    else if (playerId < 40) {
+        msg.addIntArg(3); //SUBTEAM - shape
+        
+    }
+    
+    else if (playerId < 50) {
+        msg.addIntArg(4); //SUBTEAM - shape
+        
+    }
+    else if (playerId < 60) {
+        msg.addIntArg(5); //SUBTEAM - shape
+        
+    }
+    else if (playerId < 70) {
+        msg.addIntArg(6); //SUBTEAM - shape
+        
+    }
+    else if (playerId < 80) {
+        
+        msg.addIntArg(7); //SUBTEAM - shape
+    }
+    
+    else if (playerId < 90) {
+        msg.addIntArg(8); //SUBTEAM - shape
+        
+    }
+    else {
+        msg.addIntArg(9); //SUBTEAM - shape
+        
+    }
+    
 
     cout << "Team " << playerId%10 << " Sub " << playerId%players.size() << endl;
     //default state is dragging
@@ -346,6 +393,38 @@ void testApp::newHumanoid() {
     
     h.get()->setData(new CustomData());
     h.get()->setupCustom(humanoids.size());
+    if (humanoids.size() < 10) {
+        h.get()->image = &playerImages[0];
+    }
+    else if (humanoids.size() < 20) {
+        h.get()->image = &playerImages[1];
+    }
+    else if (humanoids.size() < 30) {
+        h.get()->image = &playerImages[2];
+    }
+    else if (humanoids.size() < 40) {
+        h.get()->image = &playerImages[3];
+    }
+    else if (humanoids.size() < 50) {
+        h.get()->image = &playerImages[4];
+    }
+    else if (humanoids.size() < 60) {
+        h.get()->image = &playerImages[5];
+    }
+    else if (humanoids.size() < 70) {
+        h.get()->image = &playerImages[6];
+    }
+    else if (humanoids.size() < 80) {
+        h.get()->image = &playerImages[7];
+    }
+    else if (humanoids.size() < 90) {
+        h.get()->image = &playerImages[8];
+    }
+    else {
+        h.get()->image = &playerImages[9];
+        
+    }
+
     humanoids.push_back(h);
     cout << "Humanoid Created" << endl;
     
