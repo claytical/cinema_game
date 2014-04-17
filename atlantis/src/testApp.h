@@ -10,6 +10,8 @@
 #include "attacker.h"
 #include "zombie.h"
 #include "humanoid.h"
+#include "hovercraft.h"
+#include "chain.h"
 
 #define SERVER_PORT 9000
 #define CLIENT_PORT 9001
@@ -38,8 +40,10 @@
 #define GAME_CONTROL_TAP            3
 
 #define AMOUNT_OF_FOOD              50
-#define AMOUNT_OF_ATTACKERS         10
+#define AMOUNT_OF_ATTACKERS         500
 #define AMOUNT_OF_ZOMBIES           200
+#define HOVERCRAFT_LANES            3
+#define CHAIN_LANES                 2
 
 
 class testApp : public ofBaseApp{
@@ -90,17 +94,28 @@ class testApp : public ofBaseApp{
         int gameState;
         ofxVoiceSynthesizer narrator;
         ofxBox2d    box2d;			  //	the box2d world
-        ofImage playerImages[10];
+        ofImage playerImages[7];
 
     //game #1
         vector <ofPtr<Food> > food;
         vector <ofPtr<Humanoid> > humanoids;
         void newFood();
         void newHumanoid();
+        void humanFoodContact(ofxBox2dContactArgs &e);
+
 
     //game #2
         vector <ofPtr<Attacker> > attackers;
+        vector <Chain> chains;
+        vector <int> playerChainMap;
         void newAttacker();
+        void attackerContact(ofxBox2dContactArgs &e);
+    
+    //game #3
+    int numberOfPlayersPerVehicle;
+    vector<Hovercraft> hovercrafts;
+    vector<int> playerHovercraftMap;
+//    playerHovercraftMap[52] = 6;
 
     //game #4
     vector <ofPtr<Zombie> > zombies;

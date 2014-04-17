@@ -63,11 +63,11 @@ void Humanoid::display() {
     ofPushMatrix();
     ofSetRectMode(OF_RECTMODE_CENTER);
     ofTranslate(getPosition());
-    ofRotateZ(getRotation());
+//    ofRotateZ(getRotation());
     ofSetColor(color);
     ofFill();
     image->draw(0,0, width, height);
-    ofRect(0, 0, width, height);
+   // ofRect(0, 0, width, height);
     ofSetRectMode(OF_RECTMODE_CORNER);
     ofPopMatrix();
 }

@@ -26,8 +26,8 @@ void testApp::setup(){
 	box2d.setFPS(30.0);
     
     //image setup
-    for (int i = 0; i < 10; i++) {
-        playerImages[i].loadImage(ofToString(i) + ".png");
+    for (int i = 0; i < 7; i++) {
+        playerImages[i].loadImage("Human-" + ofToString(i) + ".png");
     }
 
     debugging = true;
@@ -59,6 +59,33 @@ void testApp::update(){
                 
             }
         }
+        else if(gameStarted) {
+            switch (gameState) {
+                case GAME_STATE_GAME_1:
+                    if (msg.getAddress() == "/move") {
+                        int playerNumber = msg.getArgAsInt32(0);
+                        float xSpeed = msg.getArgAsFloat(1) * .1;
+                        float ySpeed = msg.getArgAsFloat(2) * .1;
+                        cout << xSpeed << "," << ySpeed << endl;
+                        humanoids[playerNumber].get()->setVelocity(xSpeed, ySpeed);
+                        
+                    }
+                    
+                    break;
+                case GAME_STATE_GAME_3:
+                    //0 is playernumber
+                    if (msg.getAddress() == "/sound") {
+                        if (msg.getArgAsFloat(1) > .5) {
+                            hovercrafts[playerHovercraftMap[msg.getArgAsInt32(0)]].move(msg.getArgAsInt32(0)%numberOfPlayersPerVehicle);
+                        }
+                    }
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+        
         
     }
     
@@ -82,6 +109,10 @@ void testApp::update(){
                 }
             }
             break;
+            
+        case GAME_STATE_GAME_3:
+            break;
+
         case GAME_STATE_GAME_4:
             box2d.update();
             if (zombies.size() < AMOUNT_OF_ZOMBIES) {
@@ -117,10 +148,27 @@ void testApp::draw(){
             for (int i = 0; i < attackers.size(); i++) {
                 attackers[i].get()->display();
             }
+            for (int i = 0; i < chains.size(); i++) {
+                chains[i].display();
+            }
             // draw the ground
             box2d.drawGround();
             break;
+        case GAME_STATE_GAME_3:
+            ofSetColor(255, 255, 255);
+            //need to draw scenery
             
+            //something to push against them?
+            
+            //players
+            for (int i = 0; i < hovercrafts.size(); i++) {
+                hovercrafts[i].display();
+               // cout << "hovercraft #" << i << " passengers: " << hovercrafts[i].numberOfPassengers << endl;
+            }
+            
+            
+            
+            break;
         case GAME_STATE_GAME_4:
             ofSetColor(255,255,255);
             
@@ -190,8 +238,9 @@ int testApp::newPlayer(string player, string ipaddress) {
     playerIPs.push_back(ipaddress);
     Player p;
     p.create(player, ipaddress);
+    p.playerId = players.size();
     players.push_back(p);
-    return (players.size() - 1);
+    return p.playerId;
 }
 
 //--------------------------------------------------------------
@@ -214,6 +263,8 @@ void testApp::joinGame(int playerId) {
 //--------------------------------------------------------------
 void testApp::changeGameScene() {
     cout << "Changing Game Scene" << endl;
+    int vehicleNumber = 0;
+
     switch (gameState) {
         case GAME_STATE_GAME_1_INTRO:
             //
@@ -224,6 +275,8 @@ void testApp::changeGameScene() {
             broadcastState(GAME_STATE_WAITING);
             break;
         case GAME_STATE_GAME_1:
+            ofAddListener(box2d.contactStartEvents, this, &testApp::humanFoodContact);
+
             cout << "Starting game #1, everyone should have drag controls" << endl;
             //create humanoids for each player
             for (int i = 0; i < players.size(); i++) {
@@ -232,27 +285,88 @@ void testApp::changeGameScene() {
             
             broadcastControl(GAME_CONTROL_MOVE);
             break;
+            
         case GAME_STATE_GAME_2_INTRO:
+            //stop listening for food and human contact
+            ofRemoveListener(box2d.contactStartEvents, this,&testApp::humanFoodContact);
             //clean up game #1
             food.clear();
+            humanoids.clear();
 
             narrator.speak("Most of you have made it to your surface vehicles. But a few souls are lost, now as crazed as the attacking sea life. They are bent on destroying their former neighbors and friends. Your vehicle team must work together to navigate through the depths, avoiding contact with these deadly creatures that threaten to destroy your only mode of transportation.");
             cout << "Intro to game #2" << endl;
             broadcastState(GAME_STATE_WAITING);
             break;
         case GAME_STATE_GAME_2:
-            
+            ofAddListener(box2d.contactStartEvents, this, &testApp::attackerContact);
+
             cout << "Starting game #2, everyone should have tilt controls" << endl;
+            numberOfPlayersPerVehicle = int(players.size()/HOVERCRAFT_LANES);
+            if (numberOfPlayersPerVehicle <= 0) {
+                numberOfPlayersPerVehicle = 1;
+            }
+            //make craft for each lane
+            for (int i = 0; i < players.size(); i+= numberOfPlayersPerVehicle) {
+                for (int playerNumbers = i; playerNumbers < i + numberOfPlayersPerVehicle; playerNumbers++) {
+                    playerChainMap.push_back(vehicleNumber);
+                    cout << "placing player " << playerChainMap.size() << " into vehicle " << vehicleNumber << endl;
+                }
+                Chain tmpChain;
+                if (numberOfPlayersPerVehicle != 1) {
+                    cout << "assigning something other than 1, " << numberOfPlayersPerVehicle << endl;
+                }
+                //ofMap(i, 50, players.size(), 50, ofGetWidth()-50)
+                tmpChain.create(50 + (i*50), ofGetHeight(), numberOfPlayersPerVehicle, &box2d);
+                
+                chains.push_back(tmpChain);
+                cout << "creating vehicle #" << chains.size() << " with " << numberOfPlayersPerVehicle << " passengers"<< endl;
+                vehicleNumber++;
+            }
+            
+            
+            
+            
             broadcastControl(GAME_CONTROL_ACCEL);
             break;
         case GAME_STATE_GAME_3_INTRO:
             attackers.clear();
-            narrator.speak("In the distance is a building still standing. Fortified enough to shield your from attack, large enough for everyone to seek shelter. You must propel yourselves to safety. Take turns blowing into your phone, one-at-a-time, in the order you are lined up. ");
+            narrator.speak("In the distance is a building still standing. Fortified enough to shield your from attack, large enough for everyone to seek shelter. You must propel yourselves to safety. Take turns blowing into your phone, one-at-a-time, in the order you are lined up.");
             cout << "Intro to game #3" << endl;
             broadcastState(GAME_STATE_WAITING);
             break;
         case GAME_STATE_GAME_3:
             cout << "Starting game #3, everyone should have audio controls" << endl;
+            //divide up into lanes
+
+            numberOfPlayersPerVehicle = int(players.size()/HOVERCRAFT_LANES);
+            if (numberOfPlayersPerVehicle <= 0) {
+                numberOfPlayersPerVehicle = 1;
+            }
+            //make craft for each lane
+            for (int i = 0; i < players.size(); i+= numberOfPlayersPerVehicle) {
+                for (int playerNumbers = i; playerNumbers < i + numberOfPlayersPerVehicle; playerNumbers++) {
+                    playerHovercraftMap.push_back(vehicleNumber);
+                    cout << "placing player " << playerHovercraftMap.size() << " into vehicle " << vehicleNumber << endl;
+                }
+                    Hovercraft tmpHC;
+                if (numberOfPlayersPerVehicle != 1) {
+                    cout << "assigning something other than 1, " << numberOfPlayersPerVehicle << endl;
+                }
+                tmpHC.create(50, ofMap(i, 0, players.size(), 50, ofGetHeight()-100), numberOfPlayersPerVehicle);
+               // tmpHC.numberOfPassengers = numberOfPlayersPerVehicle;
+                hovercrafts.push_back(tmpHC);
+                cout << "creating vehicle #" << hovercrafts.size() << " with " << numberOfPlayersPerVehicle << " passengers"<< endl;
+                vehicleNumber++;
+            }
+            //in case it doesn't divide evenly
+            if (players.size()%numberOfPlayersPerVehicle > 0) {
+                Hovercraft lastVehicle;
+                lastVehicle.create(50, ofGetHeight()-50, players.size()%numberOfPlayersPerVehicle);
+                hovercrafts.push_back(lastVehicle);
+                cout << "doesn't divide evenly" << endl;
+            }
+        
+            
             broadcastControl(GAME_CONTROL_AUDIO);
             break;
         case GAME_STATE_GAME_4_INTRO:
@@ -297,6 +411,13 @@ void testApp::keyPressed(int key){
         gameStarted = true;
         gameState = GAME_STATE_GAME_1_INTRO;
         changeGameScene();
+    }
+    else if (key == 'p') {
+        newPlayer("playa", ofToString(ofGetElapsedTimef()));
+    }
+    else if (key == 'z') {
+        humanoids[0].get()->setVelocity(0, 5);
+
     }
     else {
         gameState++;
@@ -386,15 +507,53 @@ void testApp::newHumanoid() {
     h.get()->setPhysics(.5, 1, 1);
     
     // f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
-    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 50, 50);
+    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 25, 25);
     
     h.get()->setVelocity(0,0);
+    h.get()->image = &playerImages[0];
     //f.get()->image = &plankton[planktonNumber];
     
     h.get()->setData(new CustomData());
     h.get()->setupCustom(humanoids.size());
     humanoids.push_back(h);
     
+}
+
+
+//--------------------------------------------------------------
+void testApp::humanFoodContact(ofxBox2dContactArgs &e) {
+    cout  << "contact in game 1" << endl;
+    
+    if(e.a != NULL && e.b != NULL) {
+        CustomData *data1 = (CustomData *)e.a->GetBody()->GetUserData();
+        CustomData *data2 = (CustomData *)e.b->GetBody()->GetUserData();
+        if (data1 != NULL && data2 != NULL) {
+            if (data1->type == data2->type) {
+                //colliding against each other
+                if (data1->type == TYPE_HUMANOID) {
+                    //PLAYERS COLLIDING WITH EACH OTHER
+                }
+                if (data1->type == TYPE_FOOD) {
+                    //FOOD ON FOOD COLLISION
+                }
+            }
+            else {
+                //two different types colliding, lets figure it out
+                //if more than 2 types, needs more logic
+                if (data1->type == TYPE_FOOD) {
+                    //food is data1, player is data2
+                    data1->remove = true;
+                    players[data2->id].score+= food[data1->id].get()->getWidth();
+                }
+                else {
+                    //food is data2, player is data1
+                    data2->remove = true;
+                    players[data1->id].score+= food[data2->id].get()->getWidth();
+                }
+                
+            }
+        }
+    }
 }
 
 
@@ -415,6 +574,13 @@ void testApp::newAttacker() {
     a.get()->setupCustom(attackers.size());
     attackers.push_back(a);
     
+}
+
+
+//-------
+void testApp::attackerContact(ofxBox2dContactArgs &e) {
+    cout << "attacker contact" << endl;
+//    cout << e.a
 }
 
 

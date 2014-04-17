@@ -57,6 +57,9 @@
 		67FE4C7B15C2F0478C8126C2 /* NetworkingUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3B361208CD4107E479F04E7B /* NetworkingUtils.cpp */; };
 		684CFB2E4AC045640B3A61F8 /* b2WheelJoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D18AF2C4EAE1F91A3CC44475 /* b2WheelJoint.cpp */; };
 		6DEA36329DE746459C62983F /* b2EdgeShape.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2740F234BABAAF7475AC01AA /* b2EdgeShape.cpp */; };
+		6F5086CF18F35A3C002F50FB /* pod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6F5086CD18F35A3C002F50FB /* pod.cpp */; };
+		6FA0E59F18F0D81100496439 /* hovercraft.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FA0E59D18F0D81100496439 /* hovercraft.cpp */; };
+		6FA0E5A218F11A5700496439 /* tank.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6FA0E5A018F11A5700496439 /* tank.cpp */; };
 		6FCE95D2EF10ACCEC2724688 /* b2Island.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C703FD5B2D1D10BAEE01BEA /* b2Island.cpp */; };
 		6FECC51818E899F3000A91E4 /* ofxVoiceSynthesizer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC51318E899F3000A91E4 /* ofxVoiceSynthesizer.mm */; };
 		6FECC51918E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 6FECC51518E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.mm */; };
@@ -293,8 +296,12 @@
 		6B65E6930994CC4B2D2B8B33 /* OscPacketListener.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = OscPacketListener.h; path = ../../../addons/ofxOsc/libs/oscpack/src/osc/OscPacketListener.h; sourceTree = SOURCE_ROOT; };
 		6B991C1BAE4D8067BF37E903 /* ofxBox2dRender.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ofxBox2dRender.h; path = ../../../addons/ofxBox2d/src/ofxBox2dRender.h; sourceTree = SOURCE_ROOT; };
 		6C380B1DFE0E88A4F86B7A0C /* b2Collision.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = b2Collision.h; path = ../../../addons/ofxBox2d/libs/Box2D/Collision/b2Collision.h; sourceTree = SOURCE_ROOT; };
-		6FECC50B18E899F3000A91E4 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		6FECC51018E899F3000A91E4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		6F5086CD18F35A3C002F50FB /* pod.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pod.cpp; sourceTree = "<group>"; };
+		6F5086CE18F35A3C002F50FB /* pod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pod.h; sourceTree = "<group>"; };
+		6FA0E59D18F0D81100496439 /* hovercraft.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = hovercraft.cpp; sourceTree = "<group>"; };
+		6FA0E59E18F0D81100496439 /* hovercraft.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = hovercraft.h; sourceTree = "<group>"; };
+		6FA0E5A018F11A5700496439 /* tank.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tank.cpp; sourceTree = "<group>"; };
+		6FA0E5A118F11A5700496439 /* tank.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tank.h; sourceTree = "<group>"; };
 		6FECC51218E899F3000A91E4 /* ofxVoiceSynthesizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxVoiceSynthesizer.h; sourceTree = "<group>"; };
 		6FECC51318E899F3000A91E4 /* ofxVoiceSynthesizer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ofxVoiceSynthesizer.mm; sourceTree = "<group>"; };
 		6FECC51418E899F3000A91E4 /* ofxVoiceSynthesizerDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxVoiceSynthesizerDelegate.h; sourceTree = "<group>"; };
@@ -655,8 +662,6 @@
 		6FECC50A18E899F3000A91E4 /* ofxVoiceSynthesizer */ = {
 			isa = PBXGroup;
 			children = (
-				6FECC50B18E899F3000A91E4 /* .gitignore */,
-				6FECC51018E899F3000A91E4 /* README.md */,
 				6FECC51118E899F3000A91E4 /* src */,
 			);
 			name = ofxVoiceSynthesizer;
@@ -1102,6 +1107,12 @@
 				6FECC52618E8E706000A91E4 /* humanoid.h */,
 				6FECC52818E91401000A91E4 /* chain.cpp */,
 				6FECC52918E91401000A91E4 /* chain.h */,
+				6FA0E59D18F0D81100496439 /* hovercraft.cpp */,
+				6FA0E59E18F0D81100496439 /* hovercraft.h */,
+				6FA0E5A018F11A5700496439 /* tank.cpp */,
+				6FA0E5A118F11A5700496439 /* tank.h */,
+				6F5086CD18F35A3C002F50FB /* pod.cpp */,
+				6F5086CE18F35A3C002F50FB /* pod.h */,
 			);
 			path = src;
 			sourceTree = SOURCE_ROOT;
@@ -1249,6 +1260,7 @@
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* testApp.cpp in Sources */,
 				72A929D3561B8232A182ABFC /* ofxOscBundle.cpp in Sources */,
+				6F5086CF18F35A3C002F50FB /* pod.cpp in Sources */,
 				5864AD82E20F15536D054EA3 /* ofxOscMessage.cpp in Sources */,
 				4ADB88E2FB52E76A471065DE /* ofxOscParameterSync.cpp in Sources */,
 				640279EE111671BD026CB013 /* ofxOscReceiver.cpp in Sources */,
@@ -1281,6 +1293,7 @@
 				298EAD2C029D9959F5B32246 /* b2CollidePolygon.cpp in Sources */,
 				AC5A3D9E6C3E12122C80F404 /* b2Collision.cpp in Sources */,
 				A2E3224BF9B63DAA802A0F18 /* b2Distance.cpp in Sources */,
+				6FA0E59F18F0D81100496439 /* hovercraft.cpp in Sources */,
 				71C677669B75120425DE19D4 /* b2DynamicTree.cpp in Sources */,
 				19894C344A6861A26A61D2C0 /* b2TimeOfImpact.cpp in Sources */,
 				453D704CD216672147B2EEC2 /* b2ChainShape.cpp in Sources */,
@@ -1292,6 +1305,7 @@
 				22A83FE368C671FA8DBD5E51 /* b2Math.cpp in Sources */,
 				CB503B33759F22A302B8FC6E /* b2Settings.cpp in Sources */,
 				0C7BD977292F7D20B41DF594 /* b2StackAllocator.cpp in Sources */,
+				6FA0E5A218F11A5700496439 /* tank.cpp in Sources */,
 				1BE4156E2DF3B30461C48C70 /* b2Timer.cpp in Sources */,
 				3E76A164B41BCEB11B15C175 /* b2Body.cpp in Sources */,
 				C3D8EF14A387EA959014AD91 /* b2ContactManager.cpp in Sources */,

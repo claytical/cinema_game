@@ -78,12 +78,15 @@ class testApp : public ofBaseApp{
         int gameState;
         int winnerID;
         float gameTimer;
+        float timeUntilNextGame;
         ofxVoiceSynthesizer narrator;
         ofxBox2d    box2d;			  //	the box2d world
         ofxCenteredTrueTypeFont timerText;
-        ofImage playerImages[10];
-
-    
+        ofImage playerImages[9];
+        ofImage plankton;
+        int imageCounter;
+        ofSoundPlayer backgroundTrack;
+        ofSoundPlayer collectFx;
     //game #1
         vector <ofPtr<Food> > food;
         vector <ofPtr<Humanoid> > humanoids;

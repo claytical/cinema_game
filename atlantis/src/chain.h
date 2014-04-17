@@ -7,16 +7,23 @@
 //
 
 #include "ofMain.h"
-#include "ofxBox2dRect.h"
-#include "custom.h"
+#include "pod.h"
+#include "ofxBox2dJoint.h"
+#include "ofxBox2d.h"
 
-class Chain : public ofxBox2dRect {
+class Chain {
     
 public:
     void display();
-    void setupCustom(int id);
+    void create(float x, float y, int numberOfLinks, ofxBox2d *b2d);
     ofColor color;
     ofImage *image;
+    ofxBox2d *b2d;
+    ofPoint position;
+    ofPoint velocity;
+    vector		<ofPtr<Pod> >      pods;		  //	default box2d circles
+	vector		<ofPtr<ofxBox2dJoint> >		joints;			  //	joints
+
     //players assigned part of chain
     //need vector of int for control look up. chainMap[playerID] = chainID
 };

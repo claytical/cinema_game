@@ -16,6 +16,7 @@
 #define TYPE_SHIP           3
 #define TYPE_ATTACKER       4
 #define TYPE_ZOMBIE         5
+#define TYPE_POD            6
 
 
 class CustomData {

@@ -19,7 +19,11 @@ void testApp::setup(){
     ofSetFrameRate(30);
     ofEnableAlphaBlending();
     ofEnableSmoothing();
-    
+    ofBackground(10);
+    collectFx.loadSound("collect.wav");
+    backgroundTrack.loadSound("background.wav");
+    backgroundTrack.setLoop(true);
+    backgroundTrack.play();
     //networking setup
     //bonjour auto discovery stuff
     bonjour = new ofxBonjourIp();
@@ -38,21 +42,21 @@ void testApp::setup(){
     box2d.enableEvents();
 	box2d.setFPS(30.0);
     box2d.createBounds();
-    ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
-    ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
 
     //game setup
     
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 9; i++) {
         playerImages[i].loadImage(ofToString(i) + ".png");
     }
-
+    plankton.loadImage("plankton.png");
     debugging = true;
     gameStarted = false;
     gameState = GAME_STATE_WAITING;
     gameTimer = 999999999;
+    timeUntilNextGame = 5000;
     timerText.loadFont("joystix.ttf", 48);
     winnerID = -1;
+    imageCounter = 0;
 }
 
 //--------------------------------------------------------------
@@ -70,25 +74,30 @@ void testApp::update(){
             string playerName = msg.getArgAsString(0);
             //look for existing players with the same IP
             if (std::find(playerIPs.begin(), playerIPs.end(), incomingPlayerIP) == playerIPs.end()) {
+
                 //no player with that IP address, create a new one
-                    int playerID = newPlayer(playerName, incomingPlayerIP);
-                
+                int playerID = newPlayer(playerName, incomingPlayerIP);
                 //join the game
                 joinGame(playerID);
                 newHumanoid();
-               // sendState(incomingPlayerIP, GAME_STATE_PLAYING);
+//                imageCounter++;
+
+                // sendState(incomingPlayerIP, GAME_STATE_PLAYING);
             }
             else {
                 //wants to rejoin
+
                 int removedPlayerID = removeExistingPlayer(incomingPlayerIP);
                 //create a new player
                 int playerID = newPlayer(playerName, incomingPlayerIP);
                 
                 //join the game
+//                imageCounter--;
+
                 joinGame(playerID);
                 newHumanoid();
                 //sendState(incomingPlayerIP, GAME_STATE_PLAYING);
-                
+
             }
         }
 
@@ -119,19 +128,38 @@ void testApp::update(){
         winnerID = whoWon();
         for (int i = 0; i < players.size(); i++) {
             cout << players[i].name << " : " << players[i].score << endl;
-            players[i].resetScore();
         }
         if (winnerID >= 0) {
             cout << "The winner is " << players[winnerID].name << endl;
         }
         broadcastState(GAME_STATE_WAITING);
+        timeUntilNextGame = ofGetElapsedTimef() + 30;
+        ofRemoveListener(box2d.contactStartEvents, this, &testApp::contactStart);
+        ofRemoveListener(box2d.contactEndEvents, this, &testApp::contactEnd);
+
+    }
+    //restart game automatically
+    if (!gameStarted && ofGetElapsedTimef() > timeUntilNextGame) {
+
+        gameStarted = true;
+        broadcastState(GAME_STATE_PLAYING);
+        gameTimer = ofGetElapsedTimef() + 30;
+        for (int i = 0; i < players.size(); i++) {
+            players[i].resetScore();
+        }
+        ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
+        ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
 
     }
 }
 //--------------------------------------------------------------
 void testApp::draw(){
     for (int i = 0; i < humanoids.size(); i++) {
+//        ofSetColor(127);
+//        ofDrawBitmapString(ofToString(players[i].score), humanoids[i].get()->getPosition().x, -humanoids[i].get()->getPosition().y);
+
         humanoids[i].get()->display();
+    
     }
     
     for (int i = 0; i < food.size(); i++) {
@@ -140,6 +168,7 @@ void testApp::draw(){
 
     // draw the ground
     string timeLeft = ofToString(abs(int(ofGetElapsedTimef() - gameTimer)));
+    string timeTil = ofToString(abs(int(ofGetElapsedTimef() - timeUntilNextGame)));
     if (gameStarted) {
         if (ofGetElapsedTimef() < gameTimer - 28) {
             ofSetColor(0);
@@ -157,10 +186,15 @@ void testApp::draw(){
     else {
         if (winnerID >= 0) {
             ofSetColor(0);
-            timerText.drawStringCentered(players[winnerID].name + " wins!", ofGetWidth()/2 - 2, ofGetHeight()/2 - 2);
+            timerText.drawStringCentered(players[winnerID].name + " wins!", ofGetWidth()/2 - 2, ofGetHeight()/3 - 2);
+            timerText.drawStringCentered("Next Game: " + timeTil + " seconds", ofGetWidth()/2 - 2, ofGetHeight()/2 - 2);
+            timerText.drawStringCentered(bonjour->getDeviceIp(), ofGetWidth()/2 -2, ofGetHeight()/1.5 -2);
+
             ofSetColor(255);
-            timerText.drawStringCentered(players[winnerID].name + " wins!", ofGetWidth()/2, ofGetHeight()/2);
-            
+            timerText.drawStringCentered(players[winnerID].name + " wins!", ofGetWidth()/2, ofGetHeight()/3);
+            timerText.drawStringCentered("Next Game: " + timeTil + " seconds", ofGetWidth()/2, ofGetHeight()/2);
+            timerText.drawStringCentered(bonjour->getDeviceIp(), ofGetWidth()/2, ofGetHeight()/1.5);
+
         }
         else {
             ofSetColor(0);
@@ -241,42 +275,42 @@ void testApp::joinGame(int playerId) {
     msg.setAddress("/joined");
     msg.addIntArg(playerId);
 //for larger game, update needs to be made to controller to assign color, not by int to allow for scalability and flexibility
-    msg.addIntArg(playerId%10); //TEAM - color
+    msg.addIntArg(imageCounter%10); //TEAM - color
     //shape #1
-    if (playerId < 10) {
+    if (imageCounter < 10) {
         msg.addIntArg(0); //SUBTEAM - shape
     }
-    else if (playerId < 20) {
+    else if (imageCounter < 20) {
         msg.addIntArg(1); //SUBTEAM - shape
         
     }
-    else if (playerId < 30) {
+    else if (imageCounter < 30) {
         msg.addIntArg(2); //SUBTEAM - shape
         
     }
-    else if (playerId < 40) {
+    else if (imageCounter < 40) {
         msg.addIntArg(3); //SUBTEAM - shape
         
     }
     
-    else if (playerId < 50) {
+    else if (imageCounter < 50) {
         msg.addIntArg(4); //SUBTEAM - shape
         
     }
-    else if (playerId < 60) {
+    else if (imageCounter < 60) {
         msg.addIntArg(5); //SUBTEAM - shape
         
     }
-    else if (playerId < 70) {
+    else if (imageCounter < 70) {
         msg.addIntArg(6); //SUBTEAM - shape
         
     }
-    else if (playerId < 80) {
+    else if (imageCounter < 80) {
         
         msg.addIntArg(7); //SUBTEAM - shape
     }
     
-    else if (playerId < 90) {
+    else if (imageCounter < 90) {
         msg.addIntArg(8); //SUBTEAM - shape
         
     }
@@ -286,7 +320,7 @@ void testApp::joinGame(int playerId) {
     }
     
 
-    cout << "Team " << playerId%10 << " Sub " << playerId%players.size() << endl;
+    cout << "Team " << imageCounter%10 << " Sub " << imageCounter%players.size() << endl;
     //default state is dragging
     msg.addIntArg(GAME_CONTROL_MOVE);
     msg.addIntArg(GAME_STATE_PLAYING);
@@ -305,6 +339,24 @@ void testApp::keyPressed(int key){
         gameStarted = true;
         broadcastState(GAME_STATE_PLAYING);
         gameTimer = ofGetElapsedTimef() + 30;
+        for (int i = 0; i < players.size(); i++) {
+            players[i].resetScore();
+        }
+        ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
+        ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
+
+    }
+    if (key == 'r' && !gameStarted) {
+        winnerID = -1;
+        players.clear();
+        humanoids.clear();
+        playerIPs.clear();
+        imageCounter = 0;
+    }
+    if (key == 'n') {
+        newPlayer("zombie" + ofToString(imageCounter), ofToString(ofRandom(5)));
+        newHumanoid();
+        cout << "Humanoids:" << humanoids.size() << endl;
     }
  }
 
@@ -368,12 +420,12 @@ void testApp::newFood() {
     f.get()->setPhysics(.5, 1, 1);
     
     float fSize = ofRandom(.1, .5);
-    int planktonNumber = int(ofRandom(5));
+    //int planktonNumber = int(ofRandom(5));
     // f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
     f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 50 * fSize, 50 * fSize);
     
     f.get()->setVelocity(ofRandom(-2,2), ofRandom(-2,2));
-    //f.get()->image = &plankton[planktonNumber];
+    f.get()->image = &plankton;
     
     f.get()->setData(new CustomData());
     f.get()->setupCustom(food.size());
@@ -386,45 +438,45 @@ void testApp::newHumanoid() {
     h.get()->setPhysics(.5, 1, 1);
     
     // f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
-    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), 50, 50);
+    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), playerImages[0].width/2, playerImages[0].height/2);
     
     h.get()->setVelocity(0,0);
     //f.get()->image = &plankton[planktonNumber];
     
     h.get()->setData(new CustomData());
     h.get()->setupCustom(humanoids.size());
-    if (humanoids.size() < 10) {
+    if (imageCounter < 10) {
         h.get()->image = &playerImages[0];
     }
-    else if (humanoids.size() < 20) {
+    else if (imageCounter < 20) {
         h.get()->image = &playerImages[1];
     }
-    else if (humanoids.size() < 30) {
+    else if (imageCounter < 30) {
         h.get()->image = &playerImages[2];
     }
-    else if (humanoids.size() < 40) {
+    else if (imageCounter < 40) {
         h.get()->image = &playerImages[3];
     }
-    else if (humanoids.size() < 50) {
+    else if (imageCounter < 50) {
         h.get()->image = &playerImages[4];
     }
-    else if (humanoids.size() < 60) {
+    else if (imageCounter < 60) {
         h.get()->image = &playerImages[5];
     }
-    else if (humanoids.size() < 70) {
+    else if (imageCounter < 70) {
         h.get()->image = &playerImages[6];
     }
-    else if (humanoids.size() < 80) {
+    else if (imageCounter < 80) {
         h.get()->image = &playerImages[7];
     }
-    else if (humanoids.size() < 90) {
+    else if (imageCounter < 90) {
         h.get()->image = &playerImages[8];
     }
     else {
         h.get()->image = &playerImages[9];
         
     }
-
+    imageCounter++;
     humanoids.push_back(h);
     cout << "Humanoid Created" << endl;
     
@@ -448,18 +500,21 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
                 }
             }
             else {
+                collectFx.play();
                 //two different types colliding, lets figure it out
                 //if more than 2 types, needs more logic
                 if (data1->type == TYPE_FOOD) {
                     //food is data1, player is data2
-                    data1->remove = true;
                     players[data2->id].score+= food[data1->id].get()->getWidth();
+
+                    data1->remove = true;
                     // newFood();
                 }
                 else {
                     //food is data2, player is data1
-                    data2->remove = true;
                     players[data1->id].score+= food[data2->id].get()->getWidth();
+
+                    data2->remove = true;
                 }
                 
             }
