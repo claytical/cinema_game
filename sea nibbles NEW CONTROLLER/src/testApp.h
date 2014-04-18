@@ -79,6 +79,7 @@ class testApp : public ofBaseApp{
         void broadcastControl(int control);
         void broadcastScores();
         int removeExistingPlayer(string ip);
+        void setPlayerAlive(string ip);
     
     //game specific
         vector<Player> players;
@@ -106,6 +107,7 @@ class testApp : public ofBaseApp{
         int newPlayer(string player, string ip);
         void joinGame(string ip);
         void startGame();
+        void resetConnections();
         int whoWon();
 		
 };

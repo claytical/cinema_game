@@ -5,10 +5,28 @@ int testApp::removeExistingPlayer(string ip) {
         if(players[i].playerIp == ip) {
             cout << "Found Existing Player";
             players.erase(players.begin()+i);
-            humanoids.erase(humanoids.begin()+i);
+//            humanoids.erase(humanoids.begin()+i);
             break;
         }
     }
+}
+
+void testApp::setPlayerAlive(string ip) {
+    for (int i = 0; i < players.size(); i++) {
+        if(players[i].playerIp == ip) {
+            cout << "Found Existing Player";
+            players[i].connected = true;
+            break;
+        }
+    }
+    
+}
+static bool removeDeadPlayer(Player p) {
+    if (!p.connected) {
+        cout << "found unconnected player" << endl;
+        return true;
+    }
+    return false;
 }
 
 static bool removeFood(ofPtr<ofxBox2dBaseShape> shape) {
@@ -80,7 +98,10 @@ void testApp::update(){
         ofxOscMessage msg;
         oscReceiver.getNextMessage(&msg);
         
-        //check for 
+        //check for
+        if (msg.getAddress() == "/alive") {
+            setPlayerAlive(msg.getRemoteIp());
+        }
         if (msg.getAddress() == "/join") {
             string incomingPlayerIP = msg.getRemoteIp();
             string playerName = msg.getArgAsString(0);
@@ -285,6 +306,19 @@ int testApp::newPlayer(string player, string ipaddress) {
 }
 
 //--------------------------------------------------------------
+void testApp::resetConnections() {
+    for (int i = 0; i < players.size(); i++) {
+        players[i].connected = false;
+        ofxOscMessage m;
+        m.setAddress("/reset");
+        m.addIntArg(0);
+        oscSender.setup(players[i].playerIp, CLIENT_PORT);
+        m.setRemoteEndpoint(players[i].playerIp, CLIENT_PORT);
+        oscSender.sendMessage(m);
+    }
+}
+
+//--------------------------------------------------------------
 void testApp::joinGame(string ip) {
     ofxOscMessage msg;
 
@@ -324,6 +358,11 @@ void testApp::joinGame(string ip) {
 //--------------------------------------------------------------
 void testApp::startGame() {
     //create all players
+
+    for (int i = 0; i < humanoids.size(); i++) {
+        humanoids[i]->destroy();
+    }
+
     humanoids.clear();
     imageCounter = 0;
     
@@ -349,13 +388,20 @@ void testApp::keyPressed(int key){
     if (key == ' ') {
         startGame();
     }
-    if (key == 'r' && !gameStarted) {
+    if (key == 'r') {
         winnerID = -1;
-        players.clear();
+/*        players.clear();
         humanoids.clear();
         playerIPs.clear();
+ */
+        resetConnections();
         imageCounter = 0;
     }
+    if (key == 'k') {
+        cout << "removing dead players" << endl;
+        ofRemove(players,removeDeadPlayer);
+    }
+    
     if (key == 'n') {
         newPlayer("zombie" + ofToString(imageCounter), ofToString(ofRandom(5)));
         newHumanoid(ofToString(ofRandom(2000)));

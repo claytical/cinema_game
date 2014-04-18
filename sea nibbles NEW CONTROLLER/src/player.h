@@ -20,4 +20,5 @@ public:
     int teamId;
     int subTeamId;
     int score;
+    bool connected;
 };

@@ -12,6 +12,7 @@ void Player::create(string _name,string ip) {
     name = _name;
     playerIp = ip;
     score = 0;
+    connected = true;
 
 }
 
