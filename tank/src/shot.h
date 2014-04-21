@@ -16,7 +16,9 @@ public:
     void display();
     void setupCustom(int id);
     bool remove;
+    
     ofColor color;
     ofImage *image;
+    ofPoint velocity;
     
 };

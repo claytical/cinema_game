@@ -126,7 +126,13 @@ void testApp::update(){
         }
         
         if (msg.getAddress() == "/rotate") {
-            
+            if (msg.getNumArgs() == 2) {
+                int tankNumber = msg.getArgAsInt32(0);
+                if (tanks.size() > tankNumber) {
+                    float rotation = msg.getArgAsFloat(1);
+                    tanks[tankNumber].get()->setRotation(rotation);
+                }
+            }
         }
         
         if (msg.getAddress() == "/move") {
@@ -139,6 +145,7 @@ void testApp::update(){
                 }
             }
         }
+        
     }
 
     
@@ -167,6 +174,13 @@ void testApp::update(){
 void testApp::draw(){
     for (int i = 0; i < tanks.size(); i++) {
         tanks[i].get()->display();
+        for (int j = 0; j < tanks[i]->shots.size(); j++) {
+            tanks[i]->shots[j]->display();
+        }
+        if (ofGetFrameNum()%100 == 0) {
+            tanks[i]->shoot(&box2d);
+        }
+
     }
     
     // draw the ground
@@ -349,8 +363,9 @@ void testApp::startGame() {
 
     tanks.clear();
     imageCounter = 0;
-    
-    for (int i = 0; i < players.size() -1; i+=2) {
+    cout << "I've got " << players.size() << " players" << endl;
+    for (int i = 0; i < players.size(); i+=2) {
+        cout << "I'm in a loop!" << endl;
         //0, 3, 6,
         //0,1,2
         //3,4,5
@@ -499,10 +514,10 @@ void testApp::newTank(vector<string> ips) {
 
         switch (i) {
             case 0:
-                msg.addIntArg(GAME_CONTROL_MOVE);
+                msg.addIntArg(GAME_CONTROL_ROTATE);
                 break;
             case 1:
-                msg.addIntArg(GAME_CONTROL_ROTATE);
+                msg.addIntArg(GAME_CONTROL_MOVE);
                 break;
             case 2:
                 msg.addIntArg(GAME_CONTROL_TAP);

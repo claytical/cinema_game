@@ -17,13 +17,16 @@ void Shot::setupCustom(int id) {
     color = ofColor(ofRandom(100, 200), 200);
 }
 void Shot::display() {
+
     float width = getRadius();
+    cout << getPosition().x << ", " << getPosition().y << endl;
+    cout << "velocity " << velocity.x << ", " << velocity.y << endl;
     ofPushMatrix();
     ofTranslate(getPosition());
-    ofRotateZ(getRotation());
     ofSetColor(color);
     ofFill();
 //    image->draw(0,0, width, width);
     ofCircle(0, 0, width);
     ofPopMatrix();
+    
 }
