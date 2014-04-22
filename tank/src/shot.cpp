@@ -11,22 +11,22 @@
 void Shot::setupCustom(int id) {
     setData(new CustomData());
     CustomData * theData = (CustomData *)getData();
-    theData->type = TYPE_FOOD;
+    theData->type = TYPE_BULLET;
     theData->remove = false;
     theData->id = id;
     color = ofColor(ofRandom(100, 200), 200);
+   //    setVelocity(-5, 5);
 }
 void Shot::display() {
-
-    float width = getRadius();
-    cout << getPosition().x << ", " << getPosition().y << endl;
-    cout << "velocity " << velocity.x << ", " << velocity.y << endl;
+    
     ofPushMatrix();
     ofTranslate(getPosition());
+    ofRotateZ(getRotation());
     ofSetColor(color);
     ofFill();
-//    image->draw(0,0, width, width);
-    ofCircle(0, 0, width);
+    //    image->draw(0,0, width, height);
+//    ofRect(0, 0, width, height);
+    ofCircle(0, 0, getRadius());
     ofPopMatrix();
     
 }

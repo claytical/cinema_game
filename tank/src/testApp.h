@@ -93,6 +93,7 @@ class testApp : public ofBaseApp{
         int imageCounter;
         ofSoundPlayer backgroundTrack;
         ofSoundPlayer collectFx;
+        ofImage tankImage;
 
     //game variables
         vector <ofPtr<Tank> > tanks;

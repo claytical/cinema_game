@@ -5,6 +5,8 @@
 //  Created by Clay Ewing on 3/30/14.
 //
 //
+#ifndef __SHOT_H_INCLUDED__
+#define __SHOT_H_INCLUDED__
 
 #include "ofMain.h"
 #include "ofxBox2dCircle.h"
@@ -22,3 +24,4 @@ public:
     ofPoint velocity;
     
 };
+#endif

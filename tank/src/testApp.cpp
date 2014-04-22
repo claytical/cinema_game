@@ -28,6 +28,14 @@ static bool removeDeadPlayer(Player p) {
     }
     return false;
 }
+static bool removeShape(ofPtr<ofxBox2dBaseShape> shape) {
+    CustomData *custom = (CustomData *)shape->getData();
+    return custom->remove;
+}
+
+static bool removeTank(ofPtr<Tank> tank) {
+    return (tank->armor <= 0);
+}
 
 //--------------------------------------------------------------
 void testApp::setup(){
@@ -74,7 +82,7 @@ void testApp::setup(){
         playerImages.push_back(img);
         cout << "creating new image with " << i << endl;
     }
-    
+    tankImage.loadImage("tank.png");
     debugging = true;
     gameStarted = false;
     gameState = GAME_STATE_WAITING;
@@ -86,6 +94,10 @@ void testApp::setup(){
 
 //--------------------------------------------------------------
 void testApp::update(){
+    for (int i = 0; i < tanks.size(); i++) {
+        ofRemove(tanks[i]->shots, removeShape);
+    }
+    ofRemove(tanks, removeTank);
     //create a container for whatever message we get
     box2d.update();
     while (oscReceiver.hasWaitingMessages()) {
@@ -148,7 +160,16 @@ void testApp::update(){
         
     }
 
-    
+    if (tanks.size() <= 0 && gameStarted) {
+        //last one standing
+        broadcastScores();
+        timeUntilNextGame = ofGetElapsedTimef() + 30;
+        gameStarted = false;
+        ofRemoveListener(box2d.contactStartEvents, this, &testApp::contactStart);
+        ofRemoveListener(box2d.contactEndEvents, this, &testApp::contactEnd);
+
+    }
+    /*
     if (ofGetElapsedTimef() > gameTimer && gameStarted) {
         gameStarted = false;
         winnerID = whoWon();
@@ -164,6 +185,7 @@ void testApp::update(){
         ofRemoveListener(box2d.contactEndEvents, this, &testApp::contactEnd);
 
     }
+    */
     //restart game automatically
     if (!gameStarted && ofGetElapsedTimef() > timeUntilNextGame) {
         startGame();
@@ -177,9 +199,9 @@ void testApp::draw(){
         for (int j = 0; j < tanks[i]->shots.size(); j++) {
             tanks[i]->shots[j]->display();
         }
-        if (ofGetFrameNum()%100 == 0) {
-            tanks[i]->shoot(&box2d);
-        }
+//        if (ofGetFrameNum()%30 == 0) {
+//            tanks[i]->shoot(&box2d);
+//        }
 
     }
     
@@ -476,10 +498,10 @@ void testApp::newTank(vector<string> ips) {
     ofPtr<Tank> t = ofPtr<Tank>(new Tank);
     t.get()->setPhysics(2, .1, 1);
     
-    t.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), playerImages[imageCounter %playerImages.size()].width/2, playerImages[imageCounter %playerImages.size()].height/2);
+    t.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), tankImage.getWidth(), tankImage.getHeight());
     
     t.get()->setVelocity(0,0);
-    
+    t.get()->image = &tankImage;
     t.get()->setData(new CustomData());
     t.get()->setupCustom(tanks.size());
     int r = ofRandom(255);
@@ -505,7 +527,7 @@ void testApp::newTank(vector<string> ips) {
         msg.setAddress("set");
         msg.addStringArg("image");
         msg.addIntArg(imageCounter %playerImages.size());
-        t.get()->image = &playerImages[imageCounter %playerImages.size()];
+//        t.get()->image = &playerImages[imageCounter %playerImages.size()];
         oscSender.sendMessage(msg);
         msg.clear();
         //set player control
@@ -514,10 +536,10 @@ void testApp::newTank(vector<string> ips) {
 
         switch (i) {
             case 0:
-                msg.addIntArg(GAME_CONTROL_ROTATE);
+                msg.addIntArg(GAME_CONTROL_MOVE);
                 break;
             case 1:
-                msg.addIntArg(GAME_CONTROL_MOVE);
+                msg.addIntArg(GAME_CONTROL_ROTATE);
                 break;
             case 2:
                 msg.addIntArg(GAME_CONTROL_TAP);
@@ -547,7 +569,6 @@ void testApp::newTank(vector<string> ips) {
 
 //--------------------------------------------------------------
 void testApp::contactStart(ofxBox2dContactArgs &e) {
-    cout  << "made contact" << endl;
     
     if(e.a != NULL && e.b != NULL) {
         CustomData *data1 = (CustomData *)e.a->GetBody()->GetUserData();
@@ -555,33 +576,40 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
         if (data1 != NULL && data2 != NULL) {
             if (data1->type == data2->type) {
                 //colliding against each other
-                if (data1->type == TYPE_HUMANOID) {
-                    //PLAYERS COLLIDING WITH EACH OTHER
+                if (data1->type == TYPE_BULLET) {
+                    //BULLETS COLLIDING WITH EACH OTHER
                 }
-                if (data1->type == TYPE_FOOD) {
-                    //FOOD ON FOOD COLLISION
+                if (data1->type == TYPE_TANK) {
+                    //TANK ON TANK COLLISION
                 }
             }
             else {
                 collectFx.play();
                 //two different types colliding, lets figure it out
                 //if more than 2 types, needs more logic
-                if (data1->type == TYPE_FOOD) {
-                    //food is data1, player is data2
-//                    players[data2->id].score+= food[data1->id].get()->getWidth();
-
+                if (data1->type == TYPE_BULLET) {
+                    //data2 is tank
+                    //remove tank armor
+                    tanks[data2->id].get()->armor--;
                     data1->remove = true;
                     // newFood();
                 }
-                else {
-                    //food is data2, player is data1
- //                   players[data1->id].score+= food[data2->id].get()->getWidth();
-
+                else if (data2->type == TYPE_BULLET){
+                    tanks[data1->id].get()->armor--;
                     data2->remove = true;
                 }
                 
             }
         }
+        else if (data2 != NULL) {
+            data2->remove = true;
+        }
+
+        else if (data1 != NULL) {
+            data1->remove = true;
+        }
+    }
+    else {
     }
 }
 

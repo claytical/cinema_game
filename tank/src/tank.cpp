@@ -7,22 +7,30 @@
 //
 
 #include "tank.h"
+static bool removeShot(Shot s) {
+    return s.remove;
+}
+
+
 
 void Tank::setupCustom(int id) {
     setData(new CustomData());
     CustomData * theData = (CustomData *)getData();
-    theData->type = TYPE_HUMANOID;
+    theData->type = TYPE_TANK;
     theData->remove = false;
     theData->id = id;
+    armor = STARTING_ARMOR;
 }
-void Tank::shoot(ofxBox2d *b2d) {
+void Tank::shoot() {
     ofPtr<Shot> shot = ofPtr<Shot>(new Shot);
-
-    shot.get()->setup(b2d->getWorld(), getPosition().x + ofRandom(-30, 30), getPosition().y + ofRandom(-30, 30), 5);
-    shot.get()->setPhysics(2, .1, 1);
-    shot.get()->velocity.set(cos(-1), sin(-1));
-    shot.get()->setVelocity(cos(-1), sin(-1));
-    float radians = getRotation() * PI /2;
+    shot.get()->setPhysics(2, .1, 0);
+    float xPos = (cos((getRotation()-90) * PI/180)) * ((getHeight()/2) + 10);
+    float yPos = (sin((getRotation()-90) * PI/180)) * ((getWidth()/2 + 10));
+    
+    shot.get()->setup(this->getWorld(), getPosition().x + xPos, getPosition().y + yPos, 3);
+    cout << "X: " << cos((getRotation()-90)*PI/180) << endl;
+    cout << "Y: " << sin((getRotation()-90)*PI/180) << endl;
+    shot.get()->setVelocity(cos((getRotation()-90)*PI/180) * SHOT_SPEED, sin((getRotation()-90)*PI/180) * SHOT_SPEED);
     shot.get()->setData(new CustomData());
     shot.get()->setupCustom(shots.size());
 
@@ -31,41 +39,35 @@ void Tank::shoot(ofxBox2d *b2d) {
  //   cout << "Y Velocity: " << shot.get()->getVelocity().y << endl;
 
     shots.push_back(shot);
-    //    shot.setVelocity(get, <#float y#>)
-
-//    t.get()->setVelocity(0,0);
-    
-//    t.get()->setData(new CustomData());
-//    t.get()->setupCustom(tanks.size());
 
     
 }
 void Tank::display() {
+    //ofRemove(shots, removeShot);
     //#1 moves
     
     //#2 rotates
     if (ips[1].empty()) {
         //no player 2
+        setRotation(ofGetElapsedTimef()*30);
     }
 
     //#3 shoots
 
     if (ips[2].empty()) {
         //no player 3
+        if (int(ofRandom(10))%10 == 1) {
+            shoot();
+        }
     }
 
-    float width = getWidth();
-    float height = getHeight();
     ofPushMatrix();
-    ofSetRectMode(OF_RECTMODE_CENTER);
     ofTranslate(getPosition());
     ofRotateZ(getRotation());
-    ofSetColor(color);
+    ofSetColor(color, ofMap(armor, 0, STARTING_ARMOR, 50, 255));
     ofFill();
-    //image->draw(0,0, width, height);
-    ofRect(0, 0, width, height);
-    ofSetRectMode(OF_RECTMODE_CORNER);
+    image->draw(-getWidth()/2, -getHeight()/2, getWidth(), getHeight());
+
     ofPopMatrix();
-//    cout << shots.size() << " shots taken" << endl;
     
 }
