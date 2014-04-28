@@ -68,7 +68,7 @@ void testApp::setup(){
 
     //game setup
     
-    ofDirectory dir("abstract");
+    ofDirectory dir("tanks");
     dir.allowExt("png");
     dir.sort();
     dir.listDir();
@@ -82,7 +82,6 @@ void testApp::setup(){
         playerImages.push_back(img);
         cout << "creating new image with " << i << endl;
     }
-    tankImage.loadImage("tank.png");
     debugging = true;
     gameStarted = false;
     gameState = GAME_STATE_WAITING;
@@ -157,12 +156,19 @@ void testApp::update(){
                 }
             }
         }
+        if (msg.getAddress() == "/tap") {
+            int tankNumber = msg.getArgAsInt32(0);
+            if (tanks.size() > tankNumber) {
+                tanks[tankNumber].get()->shoot();
+            }
+        }
         
     }
 
     if (tanks.size() <= 0 && gameStarted) {
         //last one standing
         broadcastScores();
+        broadcastState(GAME_STATE_WAITING);
         timeUntilNextGame = ofGetElapsedTimef() + 30;
         gameStarted = false;
         ofRemoveListener(box2d.contactStartEvents, this, &testApp::contactStart);
@@ -258,14 +264,21 @@ void testApp::sendState(string ip, int state) {
     oscSender.setup(ip, CLIENT_PORT);
     m.setRemoteEndpoint(ip, CLIENT_PORT);
     oscSender.sendMessage(m);
-//set the playing variable as well
+    m.clear();
+    m.setAddress("set");
+    m.addStringArg("state");
+    m.addIntArg(state);
+    oscSender.sendMessage(m);
+    m.clear();
+
+    //set the playing variable as well
     if (state == GAME_STATE_PLAYING) {
-        m.clear();
         m.setAddress("set");
         m.addStringArg("playing");
         m.addIntArg(1);
         oscSender.sendMessage(m);
     }
+    
 }
 
 void testApp::broadcastScores() {
@@ -274,6 +287,16 @@ void testApp::broadcastScores() {
         sendScore(players[i].playerIp, players[i].score);
     }
 
+}
+
+void testApp::sendInstructions(string ip, string text) {
+    ofxOscMessage m;
+    m.setAddress("set");
+    m.addStringArg("instructions");
+    m.addStringArg(text);
+    oscSender.setup(ip, CLIENT_PORT);
+    m.setRemoteEndpoint(ip, CLIENT_PORT);
+    oscSender.sendMessage(m);
 }
 void testApp::sendScore(string ip, int score) {
     ofxOscMessage m;
@@ -353,7 +376,7 @@ void testApp::joinGame(string ip) {
     //what image set to use
     msg.setAddress("set");
     msg.addStringArg("images");
-    msg.addIntArg(IMAGE_SET_ABSTRACT);
+    msg.addIntArg(IMAGE_SET_TANKS);
     oscSender.sendMessage(msg);
     msg.clear();
     //what game we're playing
@@ -498,10 +521,10 @@ void testApp::newTank(vector<string> ips) {
     ofPtr<Tank> t = ofPtr<Tank>(new Tank);
     t.get()->setPhysics(2, .1, 1);
     
-    t.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), tankImage.getWidth(), tankImage.getHeight());
+    t.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), playerImages[imageCounter %playerImages.size()].width/2, playerImages[imageCounter %playerImages.size()].height/2);
     
     t.get()->setVelocity(0,0);
-    t.get()->image = &tankImage;
+    t.get()->image = &playerImages[imageCounter % playerImages.size()];
     t.get()->setData(new CustomData());
     t.get()->setupCustom(tanks.size());
     int r = ofRandom(255);
@@ -537,9 +560,12 @@ void testApp::newTank(vector<string> ips) {
         switch (i) {
             case 0:
                 msg.addIntArg(GAME_CONTROL_MOVE);
+
                 break;
             case 1:
                 msg.addIntArg(GAME_CONTROL_ROTATE);
+
+
                 break;
             case 2:
                 msg.addIntArg(GAME_CONTROL_TAP);
@@ -585,20 +611,27 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
             }
             else {
                 collectFx.play();
+                int tankId;
                 //two different types colliding, lets figure it out
                 //if more than 2 types, needs more logic
                 if (data1->type == TYPE_BULLET) {
                     //data2 is tank
                     //remove tank armor
                     tanks[data2->id].get()->armor--;
+                    tankId = data2->id;
                     data1->remove = true;
                     // newFood();
                 }
                 else if (data2->type == TYPE_BULLET){
                     tanks[data1->id].get()->armor--;
+                    tankId = data1->id;
                     data2->remove = true;
                 }
                 
+                for (int i = 0; i < 3; i++) {
+                    //send updated armor to tank
+                    sendInstructions(tanks[tankId].get()->ips[i], ofToString(tanks[tankId].get()->armor) + " ARMOR LEFT");
+                }
             }
         }
         else if (data2 != NULL) {

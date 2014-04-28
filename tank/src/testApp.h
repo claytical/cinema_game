@@ -26,6 +26,7 @@
 #define IMAGE_SET_SQUARE    0
 #define IMAGE_SET_ABSTRACT  1
 #define IMAGE_SET_HUMANS    2
+#define IMAGE_SET_TANKS     3
 
 
 class testApp : public ofBaseApp{
@@ -73,6 +74,7 @@ class testApp : public ofBaseApp{
         void sendState(string ip, int state);
         void sendControl(string ip, int control);
         void sendScore(string ip, int score);
+        void sendInstructions(string ip, string text);
         void broadcastState(int state);
         void broadcastControl(int control);
         void broadcastScores();
@@ -93,7 +95,6 @@ class testApp : public ofBaseApp{
         int imageCounter;
         ofSoundPlayer backgroundTrack;
         ofSoundPlayer collectFx;
-        ofImage tankImage;
 
     //game variables
         vector <ofPtr<Tank> > tanks;
