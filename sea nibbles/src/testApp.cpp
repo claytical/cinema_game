@@ -1,13 +1,32 @@
 #include "testApp.h"
+
 int testApp::removeExistingPlayer(string ip) {
     for (int i = 0; i < players.size(); i++) {
         if(players[i].playerIp == ip) {
             cout << "Found Existing Player";
             players.erase(players.begin()+i);
-            humanoids.erase(humanoids.begin()+i);
+//            humanoids.erase(humanoids.begin()+i);
             break;
         }
     }
+}
+
+void testApp::setPlayerAlive(string ip) {
+    for (int i = 0; i < players.size(); i++) {
+        if(players[i].playerIp == ip) {
+            cout << "Found Existing Player";
+            players[i].connected = true;
+            break;
+        }
+    }
+    
+}
+static bool removeDeadPlayer(Player p) {
+    if (!p.connected) {
+        cout << "found unconnected player" << endl;
+        return true;
+    }
+    return false;
 }
 
 static bool removeFood(ofPtr<ofxBox2dBaseShape> shape) {
@@ -44,10 +63,25 @@ void testApp::setup(){
     box2d.createBounds();
 
     //game setup
+    backgroundImages[0].loadImage("water/wave0.png");
+    backgroundImages[1].loadImage("water/wave1.png");
+    backgroundImages[2].loadImage("water/wave2.png");
     
-    for (int i = 0; i < 9; i++) {
-        playerImages[i].loadImage(ofToString(i) + ".png");
+    ofDirectory dir("abstract");
+    dir.allowExt("png");
+    dir.sort();
+    dir.listDir();
+    playerImages.clear();
+    cout << "cleared current images" << endl;
+    imageCounter = 0;
+
+    for (int i = 0; i < dir.numFiles(); i++) {
+        ofImage img;
+        img.loadImage(dir.getFile(i));
+        playerImages.push_back(img);
+        cout << "creating new image with " << i << endl;
     }
+    
     plankton.loadImage("plankton.png");
     debugging = true;
     gameStarted = false;
@@ -56,7 +90,6 @@ void testApp::setup(){
     timeUntilNextGame = 5000;
     timerText.loadFont("joystix.ttf", 48);
     winnerID = -1;
-    imageCounter = 0;
 }
 
 //--------------------------------------------------------------
@@ -68,7 +101,10 @@ void testApp::update(){
         ofxOscMessage msg;
         oscReceiver.getNextMessage(&msg);
         
-        //check for 
+        //check for
+        if (msg.getAddress() == "/alive") {
+            setPlayerAlive(msg.getRemoteIp());
+        }
         if (msg.getAddress() == "/join") {
             string incomingPlayerIP = msg.getRemoteIp();
             string playerName = msg.getArgAsString(0);
@@ -78,11 +114,8 @@ void testApp::update(){
                 //no player with that IP address, create a new one
                 int playerID = newPlayer(playerName, incomingPlayerIP);
                 //join the game
-                joinGame(playerID);
-                newHumanoid();
-//                imageCounter++;
-
-                // sendState(incomingPlayerIP, GAME_STATE_PLAYING);
+                joinGame(incomingPlayerIP);
+                //newHumanoid(incomingPlayerIP);
             }
             else {
                 //wants to rejoin
@@ -91,20 +124,20 @@ void testApp::update(){
                 //create a new player
                 int playerID = newPlayer(playerName, incomingPlayerIP);
                 
-                //join the game
-//                imageCounter--;
-
-                joinGame(playerID);
-                newHumanoid();
+                joinGame(incomingPlayerIP);
+               // newHumanoid(incomingPlayerIP);
                 //sendState(incomingPlayerIP, GAME_STATE_PLAYING);
-
             }
         }
-
+        
+        if (msg.getAddress() == "/quit") {
+            removeExistingPlayer(msg.getRemoteIp());
+        }
+        
         if (msg.getAddress() == "/move") {
             if (msg.getNumArgs() == 3) {
                 int playerNumber = msg.getArgAsInt32(0);
-                if (players.size() > playerNumber) {
+                if (humanoids.size() > playerNumber) {
                     float xSpeed = msg.getArgAsFloat(1) * -.1;
                     float ySpeed = msg.getArgAsFloat(2) * -.1;
                     humanoids[playerNumber].get()->setVelocity(xSpeed, ySpeed);
@@ -132,7 +165,8 @@ void testApp::update(){
         if (winnerID >= 0) {
             cout << "The winner is " << players[winnerID].name << endl;
         }
-        broadcastState(GAME_STATE_WAITING);
+//        broadcastState(GAME_STATE_WAITING);
+        broadcastScores();
         timeUntilNextGame = ofGetElapsedTimef() + 30;
         ofRemoveListener(box2d.contactStartEvents, this, &testApp::contactStart);
         ofRemoveListener(box2d.contactEndEvents, this, &testApp::contactEnd);
@@ -140,26 +174,36 @@ void testApp::update(){
     }
     //restart game automatically
     if (!gameStarted && ofGetElapsedTimef() > timeUntilNextGame) {
-
-        gameStarted = true;
-        broadcastState(GAME_STATE_PLAYING);
-        gameTimer = ofGetElapsedTimef() + 30;
-        for (int i = 0; i < players.size(); i++) {
-            players[i].resetScore();
-        }
-        ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
-        ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
+        startGame();
 
     }
 }
 //--------------------------------------------------------------
 void testApp::draw(){
-    for (int i = 0; i < humanoids.size(); i++) {
-//        ofSetColor(127);
-//        ofDrawBitmapString(ofToString(players[i].score), humanoids[i].get()->getPosition().x, -humanoids[i].get()->getPosition().y);
+    float bgSpacer = ofMap(sin(ofGetElapsedTimef()), -1, 1, -50, 0);
+    float bgSpacer2 = ofMap(sin(ofGetElapsedTimef()), -1, 1, -30, 0);
+    float bgSpacer3 = ofMap(sin(ofGetElapsedTimef()), -1, 1, -60, 0);
 
-        humanoids[i].get()->display();
+    for (int i = 0; i < 2; i++) {
+        backgroundImages[2].draw(bgSpacer3, ofGetHeight()-backgroundImages[0].height-backgroundImages[1].height+(backgroundImages[2].height/3));
+        backgroundImages[2].draw(bgSpacer3 + backgroundImages[2].width, ofGetHeight()-backgroundImages[0].height-backgroundImages[1].height+(backgroundImages[2].height/3));
+    }
+
+    for (int i = 0; i < 2; i++) {
+        backgroundImages[1].draw(bgSpacer2, ofGetHeight()-backgroundImages[0].height-(backgroundImages[1].height/2));
+        backgroundImages[1].draw(bgSpacer2 + backgroundImages[1].width, ofGetHeight()-backgroundImages[0].height-(backgroundImages[1].height/2));
+    }
+
+    for (int i = 0; i < 2; i++) {
+        backgroundImages[0].draw(bgSpacer, ofGetHeight()-backgroundImages[0].height);
+        backgroundImages[0].draw(bgSpacer + backgroundImages[0].width, ofGetHeight()-backgroundImages[0].height);
+    }
+
+
     
+    
+    for (int i = 0; i < humanoids.size(); i++) {
+        humanoids[i].get()->display();
     }
     
     for (int i = 0; i < food.size(); i++) {
@@ -184,7 +228,7 @@ void testApp::draw(){
 
     }
     else {
-        if (winnerID >= 0) {
+        if (winnerID >= 0 && players.size() > 0) {
             ofSetColor(0);
             timerText.drawStringCentered(players[winnerID].name + " wins!", ofGetWidth()/2 - 2, ofGetHeight()/3 - 2);
             timerText.drawStringCentered("Next Game: " + timeTil + " seconds", ofGetWidth()/2 - 2, ofGetHeight()/2 - 2);
@@ -218,23 +262,50 @@ void testApp::sendState(string ip, int state) {
     oscSender.setup(ip, CLIENT_PORT);
     m.setRemoteEndpoint(ip, CLIENT_PORT);
     oscSender.sendMessage(m);
+//set the playing variable as well
+    if (state == GAME_STATE_PLAYING) {
+        m.clear();
+        m.setAddress("set");
+        m.addStringArg("playing");
+        m.addIntArg(1);
+        oscSender.sendMessage(m);
+    }
 }
 
+void testApp::broadcastScores() {
+    broadcastState(GAME_STATE_SHOW_SCORE);
+
+    for (int i = 0; i < players.size(); i++) {
+        sendScore(players[i].playerIp, players[i].score);
+    }
+
+}
+void testApp::sendScore(string ip, int score) {
+    ofxOscMessage m;
+    m.setAddress("set");
+    m.addStringArg("score");
+    m.addIntArg(score);
+    oscSender.setup(ip, CLIENT_PORT);
+    m.setRemoteEndpoint(ip, CLIENT_PORT);
+    oscSender.sendMessage(m);
+    m.clear();
+    m.setAddress("set");
+    m.addStringArg("instructions");
+    m.addStringArg("SCORE: " + ofToString(score));
+    oscSender.setup(ip, CLIENT_PORT);
+    m.setRemoteEndpoint(ip, CLIENT_PORT);
+    oscSender.sendMessage(m);
+
+}
+
+
 //--------------------------------------------------------------
-void testApp::sendControl(string ip, int control, int playerId) {
+void testApp::sendControl(string ip, int control) {
     //bug in iOS software, need to revise. currently using JOINED address to change the controls
     ofxOscMessage m;
-    m.setAddress("/joined");
-    m.addIntArg(playerId);
-//we're making everyone on the same team and subteam for now
-    m.addIntArg(1); //TEAM
-    m.addIntArg(1); // SUBTEAM
-
-    
-    //this sets the control scheme
+    m.setAddress("set");
+    m.addStringArg("control");
     m.addIntArg(control);
-    //set them to playing, should be redundant
-    m.addIntArg(GAME_STATE_PLAYING);
 
     oscSender.setup(ip, CLIENT_PORT);
     m.setRemoteEndpoint(ip, CLIENT_PORT);
@@ -253,7 +324,7 @@ void testApp::broadcastState(int state) {
 void testApp::broadcastControl(int control) {
     for (int i = 0; i < playerIPs.size(); i++) {
         sendState(playerIPs[i], GAME_STATE_PLAYING);
-        sendControl(playerIPs[i], control, players[i].playerId);
+        sendControl(playerIPs[i], control);
         cout << "Sending " << control << " to " << playerIPs[i] << endl;
     }
     
@@ -270,92 +341,105 @@ int testApp::newPlayer(string player, string ipaddress) {
 }
 
 //--------------------------------------------------------------
-void testApp::joinGame(int playerId) {
-    ofxOscMessage msg;
-    msg.setAddress("/joined");
-    msg.addIntArg(playerId);
-//for larger game, update needs to be made to controller to assign color, not by int to allow for scalability and flexibility
-    msg.addIntArg(imageCounter%10); //TEAM - color
-    //shape #1
-    if (imageCounter < 10) {
-        msg.addIntArg(0); //SUBTEAM - shape
+void testApp::resetConnections() {
+    for (int i = 0; i < players.size(); i++) {
+        players[i].connected = false;
+        ofxOscMessage m;
+        m.setAddress("/reset");
+        m.addIntArg(0);
+        oscSender.setup(players[i].playerIp, CLIENT_PORT);
+        m.setRemoteEndpoint(players[i].playerIp, CLIENT_PORT);
+        oscSender.sendMessage(m);
     }
-    else if (imageCounter < 20) {
-        msg.addIntArg(1); //SUBTEAM - shape
-        
-    }
-    else if (imageCounter < 30) {
-        msg.addIntArg(2); //SUBTEAM - shape
-        
-    }
-    else if (imageCounter < 40) {
-        msg.addIntArg(3); //SUBTEAM - shape
-        
-    }
-    
-    else if (imageCounter < 50) {
-        msg.addIntArg(4); //SUBTEAM - shape
-        
-    }
-    else if (imageCounter < 60) {
-        msg.addIntArg(5); //SUBTEAM - shape
-        
-    }
-    else if (imageCounter < 70) {
-        msg.addIntArg(6); //SUBTEAM - shape
-        
-    }
-    else if (imageCounter < 80) {
-        
-        msg.addIntArg(7); //SUBTEAM - shape
-    }
-    
-    else if (imageCounter < 90) {
-        msg.addIntArg(8); //SUBTEAM - shape
-        
-    }
-    else {
-        msg.addIntArg(9); //SUBTEAM - shape
-        
-    }
-    
-
-    cout << "Team " << imageCounter%10 << " Sub " << imageCounter%players.size() << endl;
-    //default state is dragging
-    msg.addIntArg(GAME_CONTROL_MOVE);
-    msg.addIntArg(GAME_STATE_PLAYING);
-    oscSender.setup(players[playerId].playerIp, CLIENT_PORT);
-    msg.setRemoteEndpoint(players[playerId].playerIp, CLIENT_PORT);
-    oscSender.sendMessage(msg);
-    cout << "Sending Join Message to " << players[playerId].playerIp << endl;
 }
 
+//--------------------------------------------------------------
+void testApp::joinGame(string ip) {
+    ofxOscMessage msg;
 
+    //set player ID
+    msg.setAddress("set");
+    msg.addStringArg("id");
+    msg.addIntArg(players.size()-1);
+    oscSender.setup(ip, CLIENT_PORT);
+    msg.setRemoteEndpoint(ip, CLIENT_PORT);
+    oscSender.sendMessage(msg);
+    msg.clear();
+    //what image set to use
+    msg.setAddress("set");
+    msg.addStringArg("images");
+    msg.addIntArg(IMAGE_SET_ABSTRACT);
+    oscSender.sendMessage(msg);
+    msg.clear();
+    //what game we're playing
+    msg.setAddress("set");
+    msg.addStringArg("game");
+    msg.addStringArg("sea nibbles");
+    oscSender.sendMessage(msg);
+    msg.clear();
+/*
+    //give some instructions while they wait
+    msg.setAddress("set");
+    msg.addStringArg("instructions");
+    msg.addStringArg("when the game starts\ndrag your avatar around to\nfeed on the plankton");
+    oscSender.sendMessage(msg);
+    msg.clear();
+
+*/
+    //now wait until we're ready to play
+    sendState(ip, GAME_STATE_WAITING);
+ }
+
+//--------------------------------------------------------------
+void testApp::startGame() {
+    //create all players
+
+    for (int i = 0; i < humanoids.size(); i++) {
+        humanoids[i]->destroy();
+    }
+
+    humanoids.clear();
+    imageCounter = 0;
+    
+    for (int i = 0; i < players.size(); i++) {
+        newHumanoid(players[i].playerIp);
+    }
+    
+    gameStarted = true;
+    
+    broadcastState(GAME_STATE_PLAYING);
+    gameTimer = ofGetElapsedTimef() + 30;
+    for (int i = 0; i < players.size(); i++) {
+        players[i].resetScore();
+    }
+    ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
+    ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
+
+}
 
 //--------------------------------------------------------------
 void testApp::keyPressed(int key){
     
     if (key == ' ') {
-        gameStarted = true;
-        broadcastState(GAME_STATE_PLAYING);
-        gameTimer = ofGetElapsedTimef() + 30;
-        for (int i = 0; i < players.size(); i++) {
-            players[i].resetScore();
-        }
-        ofAddListener(box2d.contactStartEvents, this, &testApp::contactStart);
-        ofAddListener(box2d.contactEndEvents, this, &testApp::contactEnd);
-
+        startGame();
     }
-    if (key == 'r' && !gameStarted) {
+    if (key == 'r') {
         winnerID = -1;
-        players.clear();
+/*        players.clear();
         humanoids.clear();
         playerIPs.clear();
+ */
+        resetConnections();
         imageCounter = 0;
     }
+    if (key == 'k') {
+        cout << "removing dead players" << endl;
+        ofRemove(players,removeDeadPlayer);
+    }
+    
     if (key == 'n') {
         newPlayer("zombie" + ofToString(imageCounter), ofToString(ofRandom(5)));
-        newHumanoid();
+        newHumanoid(ofToString(ofRandom(2000)));
         cout << "Humanoids:" << humanoids.size() << endl;
     }
  }
@@ -433,50 +517,58 @@ void testApp::newFood() {
     
 }
 
-void testApp::newHumanoid() {
+void testApp::newHumanoid(string ip) {
+    ofxOscMessage msg;
+    oscSender.setup(ip, CLIENT_PORT);
+    msg.setRemoteEndpoint(ip, CLIENT_PORT);
+
     ofPtr<Humanoid> h = ofPtr<Humanoid>(new Humanoid);
     h.get()->setPhysics(.5, 1, 1);
     
-    // f.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), plankton[planktonNumber].width* fSize, plankton[planktonNumber].height * fSize);
-    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), playerImages[0].width/2, playerImages[0].height/2);
+    h.get()->setup(box2d.getWorld(), ofRandom(ofGetWidth()), ofRandom(ofGetHeight()), playerImages[imageCounter %playerImages.size()].width/2, playerImages[imageCounter %playerImages.size()].height/2);
     
     h.get()->setVelocity(0,0);
-    //f.get()->image = &plankton[planktonNumber];
     
     h.get()->setData(new CustomData());
     h.get()->setupCustom(humanoids.size());
-    if (imageCounter < 10) {
-        h.get()->image = &playerImages[0];
-    }
-    else if (imageCounter < 20) {
-        h.get()->image = &playerImages[1];
-    }
-    else if (imageCounter < 30) {
-        h.get()->image = &playerImages[2];
-    }
-    else if (imageCounter < 40) {
-        h.get()->image = &playerImages[3];
-    }
-    else if (imageCounter < 50) {
-        h.get()->image = &playerImages[4];
-    }
-    else if (imageCounter < 60) {
-        h.get()->image = &playerImages[5];
-    }
-    else if (imageCounter < 70) {
-        h.get()->image = &playerImages[6];
-    }
-    else if (imageCounter < 80) {
-        h.get()->image = &playerImages[7];
-    }
-    else if (imageCounter < 90) {
-        h.get()->image = &playerImages[8];
-    }
-    else {
-        h.get()->image = &playerImages[9];
-        
-    }
+
+    //set player color
+    msg.setAddress("set");
+    msg.addStringArg("color");
+    int r = ofRandom(30, 255);
+    int g = ofRandom(30, 255);
+    int b = ofRandom(30, 255);
+    h.get()->color = ofColor(r,g,b);
+    
+    msg.addIntArg(r);
+    msg.addIntArg(g);
+    msg.addIntArg(b);
+    oscSender.sendMessage(msg);
+    msg.clear();
+    //set player image id
+    
+    msg.setAddress("set");
+    msg.addStringArg("image");
+    msg.addIntArg(imageCounter %playerImages.size());
+    h.get()->image = &playerImages[imageCounter %playerImages.size()];
+    oscSender.sendMessage(msg);
+    msg.clear();
     imageCounter++;
+
+    //set player control
+    msg.setAddress("set");
+    msg.addStringArg("control");
+    msg.addIntArg(GAME_CONTROL_MOVE);
+    oscSender.sendMessage(msg);
+    msg.clear();
+//set player number
+    msg.setAddress("set");
+    msg.addStringArg("id");
+    cout << "Controlling Human " << humanoids.size() << endl;
+    msg.addIntArg(humanoids.size());
+    oscSender.sendMessage(msg);
+    msg.clear();
+
     humanoids.push_back(h);
     cout << "Humanoid Created" << endl;
     
@@ -506,13 +598,14 @@ void testApp::contactStart(ofxBox2dContactArgs &e) {
                 if (data1->type == TYPE_FOOD) {
                     //food is data1, player is data2
                     players[data2->id].score+= food[data1->id].get()->getWidth();
-
+                    sendScore(players[data2->id].playerIp, players[data2->id].score);
                     data1->remove = true;
                     // newFood();
                 }
                 else {
                     //food is data2, player is data1
                     players[data1->id].score+= food[data2->id].get()->getWidth();
+                    sendScore(players[data1->id].playerIp, players[data1->id].score);
 
                     data2->remove = true;
                 }

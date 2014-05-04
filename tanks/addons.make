@@ -1,0 +1,6 @@
+ofxOsc
+ofxXmlSettings
+ofxBonjourIp
+ofxBox2d
+ofxCenteredTrueTypeFont
+ofxUI

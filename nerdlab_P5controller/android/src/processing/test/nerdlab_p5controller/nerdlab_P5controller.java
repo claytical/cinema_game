@@ -47,19 +47,28 @@ int playerNumber;
 int tapCount;
 int playerTeam;
 int playerSubteam;
+int playerAvatar;
+int playerIndex;
 int gameState;
 int gameControl;
+int score;
+String instructions;
 String playerName;
+String chosenGame;
 int playerColor;
 PVector velocity;
 PVector position;
 PVector smooth;
 float holdingTime;
+float rotation;
 boolean holding;
 boolean playing;
-PImage playerImage[];
+//PImage playerImage[];
+ArrayList<PImage> playerImage;
 PImage bgImage;
 PFont joystix;
+int playerColor;
+
 final int PORT = 9000;
 final float ACCELEROMETER_PADDING = .15f;
 final int GAME_STATE_NO_SERVER_CONNECTION = -1;
@@ -71,6 +80,12 @@ final int GAME_CONTROL_MOVE = 0;
 final int GAME_CONTROL_AUDIO = 1;
 final int GAME_CONTROL_ACCEL = 2;
 final int GAME_CONTROL_TAP = 3;
+final int GAME_CONTROL_ROTATE = 4;
+
+final int IMAGE_SET_SQUARE  =  0;
+final int IMAGE_SET_ABSTRACT=  1;
+final int IMAGE_SET_HUMANS  =  2;
+final int IMAGE_SET_TANKS   =  3;
 
 public void setup() {
  
@@ -84,7 +99,7 @@ public void setup() {
   }
   position = new PVector(width/2,height/2,0);
   velocity = new PVector(width/2,height/2,0);
-  
+  rotation = 0;
   joystix = createFont("joystix.ttf", 48);
   textFont(joystix, 48);
   gameState = GAME_STATE_NO_SERVER_CONNECTION;
@@ -101,7 +116,9 @@ public void setup() {
   widgetContainer.addWidget(hostTextField); //place textField in container
   widgetContainer.addWidget(playButton); //place button in container
   oscP5 = new OscP5(this,9001);
-
+  playing = false;
+  chosenGame = "no game chosen";
+  playerImages = new ArrayList<PImage>();
 }
 
 public void draw() {
@@ -133,7 +150,7 @@ public void draw() {
     background(0);
     if (playing) {
         tint(playerColor);
-        image(playerImage[playerSubteam], position.x, position.y);
+        image(playerImage[playerAvatar], position.x, position.y);
     }
   
     break;
@@ -164,6 +181,40 @@ public void hideVirtualKeyboard() {
   InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
   imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
 }
+public void loadImageSet(int set) {
+  playerImages.clear();
+  String directoryPath;
+  switch(set) {
+     case IMAGE_SET_ABSTRACT:
+      directoryPath = "abstract"; 
+      break;
+    case IMAGE_SET_HUMANS:
+      directoryPath = "humans";
+      break;
+    case IMAGE_SET_SQUARE:
+      directoryPath = "square";
+      break;
+    case IMAGE_SET_TANKS:
+      directoryPath = "tanks";
+      break; 
+  }
+  
+  java.io.File folder = new java.io.File(dataPath(directoryPath));
+  java.io.FilenameFilter pngFilter = new java.io.FilenameFilter() {
+    boolean accept(File dir, String name) {
+      return name.toLowerCase().endsWith(".png");
+    }
+  };
+    
+  String[] filenames = folder.list(pngFilter);
+  for (int i = 0; i < filenames.length; i++) {
+    PImage newImage;
+    newImage = loadImage(filenames[i]);
+    playerImages.add(newImage);
+  }  
+    
+}
+
 
 public void joinGame() {
   OscBundle bndl = new OscBundle();
@@ -192,68 +243,84 @@ public void tap() {
   oscP5.send(bndl, myRemoteLocation);  
 }
 
-public void oscEvent(OscMessage theOscMessage) {
+public void rotatePlayer(float angle) {
+  OscBundle bndl = new OscBundle();
+  OscMessage rotateMessage = new OscMessage("/rotate");
+  rotateMessage.add(playerNumber);
+  rotateMessage.add(angle); /* add an int to the osc message */
+  bndl.add(rotateMessage);
+  oscP5.send(bndl, myRemoteLocation);  
  
-   if(theOscMessage.checkAddrPattern("/joined")==true) {
-     playerNumber = theOscMessage.get(0).intValue();
-     playerTeam = theOscMessage.get(1).intValue();
-     switch (playerTeam) {
-       case 0:
-         playerColor = color(0,255,126);
-         break;
-       case 1:
-         playerColor = color(218,112,214);
-         break;
-       case 2:
-         playerColor = color(137,42,226);
-         break;
-       case 3:
-         playerColor = color(63,223,207);
-         break;
-       case 4:
-         playerColor = color(244, 244, 244);
-         break;
-       case 5:
-         playerColor = color(255, 98, 70);
-         break;
-       case 6:
-         playerColor = color(237, 130, 237);
-         break;
-       case 7:
-         playerColor = color(244, 255, 249);
-         break;
-       case 8:
-         playerColor = color(255, 140, 0);
-         break;
-       case 9:
-         playerColor = color(138, 0, 138);
-         break;
-        
-     }
-     playerSubteam = theOscMessage.get(2).intValue();
-     gameControl = theOscMessage.get(3).intValue();
-     println("Game Control: " +  gameControl);
-     gameState = theOscMessage.get(4).intValue();
+}
+
+public void oscEvent(OscMessage theOscMessage) {
+  if (theOscMessage.checkAddrPattern("/quit")) {
+    //no heartbeat, doesn't matter?      
+  }
+
+  if (theOscMessage.checkAddrPattern("/reset")) {
+      OscBundle bndl = new OscBundle();
+      OscMessage resetMessage = new OscMessage("/alive");
+      bndl.add(resetMessage);
+      oscP5.send(bndl, myRemoteLocation);  
+  }
+
+  if (theOscMessage.checkAddrPattern("/feedback")) {
+    if (theOscMessage.get(0).stringValue().equals("control")) {
+
+      gameControl = theOscMessage.get(1).intValue();
+    }
+    if (theOscMessage.get(0).stringValue().equals("instructions")) {
+      instructions = theOscMessage.get(1).stringValue();
+    }
+    if (theOscMessage.get(0).stringValue().equals("score")) {
+      score = theOscMessage.get(1).intValue();
+    }
+  }
   
-  
-     
-   }
-   if(theOscMessage.checkAddrPattern("/feedback")==true) {
-     println("msg s: " + theOscMessage.get(0).stringValue());
-     println("msg i: " + theOscMessage.get(1).intValue());
-      if (theOscMessage.get(0).stringValue().equals("state")) {
-        gameState = theOscMessage.get(1).intValue();
-        println("changing state to " + gameState);
-                if (gameState == GAME_STATE_PLAYING) {
-                println("playing is true now");
-                  playing = true;
-                }
-                else {
-                    playing = false;
-                    println("playing is false");
-                }
-          }
-   }
+  if (theOscMessage.checkAddrPattern("set")) {
+    if (theOscMessage.get(0).stringValue().equals("state")) {
+      gameState = theOscMessage.get(1).intValue();
+    }
+    if (theOscMessage.get(0).stringValue().equals("playing")) {
+      playing = theOscMessage.get(1).intValue();
+      gameState = GAME_STATE_PLAYING;  
+    }
+    if (theOscMessage.get(0).stringValue().equals("control")) {
+      gameControl = theOscMessage.get(1).intValue();
+    }
+    if (theOscMessage.get(0).stringValue().equals("color")) {
+      playerColor = color(theOscMessage.get(1).intValue(), theOscMessage.get(2).intValue(), theOscMessage.get(3).intValue());
+    }
+    if (theOscMessage.get(0).stringValue().equals("image")) {
+      playerAvatar = theOscMessage.get(1).intValue();
+    }
+
+    if (theOscMessage.get(0).stringValue().equals("id")) {
+      playerNumber = theOscMessage.get(1).intValue();
+    }
+
+    if (theOscMessage.get(0).stringValue().equals("images")) {
+      loadImageSet(theOscMessage.get(1).intValue());
+    }
+
+    if (theOscMessage.get(0).stringValue().equals("index")) {
+      playerIndex = theOscMessage.get(1).intValue();
+    }
+
+    if (theOscMessage.get(0).stringValue().equals("game")) {
+      chosenGame = theOscMessage.get(1).stringValue();
+    }
+
+    if (theOscMessage.get(0).stringValue().equals("instructions")) {
+      instructions = theOscMessage.get(1).stringValue();
+    }
+
+    if (theOscMessage.get(0).stringValue().equals("score")) {
+      score = theOscMessage.get(1).intValue();
+    }
+  }
+
   print("### received an osc message.");
   print(" addrpattern: "+theOscMessage.addrPattern());
   println(" typetag: "+theOscMessage.typetag());
@@ -285,6 +352,15 @@ public void mouseDragged() {
           position.x = mouseX;
           position.y = mouseY;  
           move(velocity.x - position.x, velocity.y - position.y);            
+   }
+   
+   if (gameControl == GAME_CONTROL_ROTATE && playing) {
+       position.x = mouseX;
+       position.y = mouseY;
+       rotation = velocity.x - position.x;
+       rotatePlayer(rotation);
+       println("rotating!");
+        
    }
 }
 
