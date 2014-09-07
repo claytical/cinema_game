@@ -2,13 +2,34 @@
 <head>
 <style>
 html{
-	background-color: #00FFFF;
+	
+	/*background: url(bg.jpg) no-repeat center center fixed; 
+	-webkit-background-size: cover;
+	-moz-background-size: cover;
+	-o-background-size: cover;
+	background-size: cover;*/
+	/*background-color: #00FFFF;*/
+	background-color: #003366;
+}
+#container{
+	position: absolute;
+	top: 50%;
+	margin-top: -200px;/* half of #content height*/
+	left: 0;
+	width: 100%;
+    margin: auto auto;
+}
+#content{
+   width: 400px;
+   height: 400px;
+   margin-left: auto;
+   margin-right: auto;
 }
 .square{
-	width: 100;
-	height: 100;
+	width: 50;
+	height: 50;
 	float: left;
-	margin: 10;
+	margin: 5;
 }
 .red{
 	background-color: #FF0000;
@@ -78,6 +99,8 @@ html{
 </style>
 </head>
 <body>
+	<div id="container"><div id="content">
+
 	<!-- 1 --> <div class="square red"></div>
 	<!-- 2 --><div class="square blue"></div>
 	<!-- 3 --><div class="square green"></div>
@@ -100,6 +123,7 @@ html{
 	<!-- 18 --><div class="square lightbrown"></div>
 	<!-- 19 --><div class="square gold"></div>
 	<!-- 20 --><div class="square turquoise"></div>
+	</div></div>
 
 </body>
 </html>
